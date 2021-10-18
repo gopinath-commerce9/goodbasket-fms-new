@@ -1,0 +1,8 @@
+{
+    "UserRole": true,
+    "UserAddress": true,
+    "Vehicle": true,
+    "Base": true,
+    "UserAuth": true,
+    "Dashboard": true
+}
