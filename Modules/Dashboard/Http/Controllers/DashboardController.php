@@ -15,8 +15,9 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
-        $currentUserData = session('authUserData');
-        return view('dashboard::index');
+        $pageTitle = 'Fulfillment Center';
+        $pageSubTitle = 'Dashboard';
+        return view('dashboard::index', compact('pageTitle', 'pageSubTitle'));
     }
 
     /**
