@@ -53,7 +53,8 @@ class UserAuthController extends Controller
      */
     public function login()
     {
-        return view('userauth::login-form');
+        $pageTitle = 'User Login';
+        return view('userauth::login-form', compact('pageTitle'));
     }
 
     /**
@@ -64,11 +65,11 @@ class UserAuthController extends Controller
     public function authenticate(Request $request) {
 
         $validator = Validator::make($request->all() , [
-            'email'   => 'required|email',
+            'username'   => 'required|email',
             'password' => 'required|min:6'
         ], [
-            'email.required' => 'EMail Address should be provided.',
-            'email.email' => 'EMail Address should be valid.',
+            'username.required' => 'EMail Address should be provided.',
+            'username.email' => 'EMail Address should be valid.',
             'password.required' => 'Password should be provided.',
             'password.min' => 'Password should be minimum :min characters.',
         ]);
@@ -76,13 +77,13 @@ class UserAuthController extends Controller
         if ($validator->fails()) {
             return back()
                 ->withErrors($validator)
-                ->withInput($request->only('email', 'remember'));
+                ->withInput($request->only('username'));
         }
 
         if (Auth::guard('auth-user')->attempt([
-            'email' => $request->email,
+            'email' => $request->username,
             'password' => $request->password
-        ], $request->get('remember'))) {
+        ], false)) {
 
             $authUserData = Auth::guard('auth-user')->user()->toArray();
             $userDetails = [
