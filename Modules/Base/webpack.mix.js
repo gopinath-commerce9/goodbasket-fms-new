@@ -10,6 +10,7 @@ mix.setPublicPath(publicMainAssets).mergeManifest();
 
 mix.copyDirectory(moduleAssetDir + '/backend', publicMainAssets + '/backend');
 mix.copyDirectory(moduleAssetDir + '/frontend', publicMainAssets + '/frontend');
+mix.copyDirectory(moduleAssetDir + '/ktmt', publicMainAssets + '/ktmt');
 
 /*mix.js(__dirname + '/Resources/assets/js/app.js', 'js/base.js')
     .sass( __dirname + '/Resources/assets/sass/app.scss', 'css/base.css');*/
