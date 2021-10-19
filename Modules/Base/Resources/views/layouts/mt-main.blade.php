@@ -75,7 +75,63 @@
                         <!--begin::Entry-->
                         <div class="d-flex flex-column-fluid">
 
-                            @yield('content')
+                            <div class="container">
+
+                                @if(session()->has('success'))
+                                    <div class="alert alert-custom alert-success alert-light-success fade show" role="alert">
+                                        <div class="alert-icon"><i class="flaticon2-check-mark"></i></div>
+                                        <div class="alert-text">{{ session()->get('success') }}</div>
+                                        <div class="alert-close">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true"><i class="ki ki-close"></i></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if(session()->has('message'))
+                                    <div class="alert alert-custom alert-dark alert-light-dark fade show" role="alert">
+                                        <div class="alert-icon"><i class="flaticon-information"></i></div>
+                                        <div class="alert-text">{{ session()->get('message') }}</div>
+                                        <div class="alert-close">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true"><i class="ki ki-close"></i></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if(session()->has('error'))
+                                    <div class="alert alert-custom alert-danger alert-light-danger fade show" role="alert">
+                                        <div class="alert-icon"><i class="flaticon2-warning"></i></div>
+                                        <div class="alert-text">{{ session()->get('error') }}</div>
+                                        <div class="alert-close">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true"><i class="ki ki-close"></i></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if($errors->any())
+                                    <div class="alert alert-custom alert-danger alert-light-danger fade show" role="alert">
+                                        <div class="alert-icon"><i class="flaticon2-warning"></i></div>
+                                        <div class="alert-text">
+                                            <ul class="list-unstyled">
+                                                {!! implode('', $errors->all('<li><span>:message</span></li>')) !!}
+                                            </ul>
+                                        </div>
+                                        <div class="alert-close">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true"><i class="ki ki-close"></i></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @yield('content')
+
+                            </div>
 
                         </div>
                         <!--end::Entry-->
