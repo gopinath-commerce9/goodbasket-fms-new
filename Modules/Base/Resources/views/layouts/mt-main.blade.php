@@ -27,12 +27,13 @@
         <!--end::Global Theme Styles-->
         <!--begin::Layout Themes(used by all pages)-->
         <!--end::Layout Themes-->
-        <link rel="shortcut icon" href="{{ asset('ktmt/media/logos/favicon.png') }}" />
 
         {{-- Laravel Mix - CSS File --}}
-        {{-- <link rel="stylesheet" href="{{ mix('css/base.css') }}"> --}}
+         <link rel="stylesheet" href="{{ asset('css/base.css') }}">
 
         @yield('custom-css-section')
+
+        <link rel="shortcut icon" href="{{ asset('ktmt/media/logos/favicon.png') }}" />
 
         @yield('initialize-js-section')
 
@@ -115,7 +116,7 @@
         <script src="{{ asset('ktmt/js/pages/crud/datatables/basic/basic.js') }}"></script>
 
         {{-- Laravel Mix - JS File --}}
-        {{-- <script src="{{ mix('js/base.js') }}"></script> --}}
+         <script src="{{ asset('js/base.js') }}"></script>
 
         @yield('custom-js-section')
         <!--end::Page Scripts-->
