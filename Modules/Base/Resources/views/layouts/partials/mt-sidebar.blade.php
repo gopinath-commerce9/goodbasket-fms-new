@@ -16,57 +16,100 @@
         <!--begin::Nav-->
         <ul class="nav flex-column">
 
-            <!--begin::Item-->
-            <li class="nav-item mb-5" data-toggle="tooltip" data-placement="right" data-container="body" data-boundary="window" title="Dashboard">
-                <a href="{{ route('dashboard.index') }}" class="nav-link btn btn-icon btn-clean btn-icon-white btn-lg <?php if($pageTitle=='dashboard'){?> active <?php } ?>">
-                    <i class="flaticon2-protection icon-lg"></i>
-                </a>
-            </li>
-            <!--end::Item-->
+            <?php
+                $menuConfig = config('menuitems');
+                $menuUserRole = null;
+                $currentMenuUrl = '/' . Request::path();
+                if (session()->has('authUserData')) {
+                    $menuUser = session('authUserData');
+                    $menuUserRole = $menuUser['roleCode'];
+                }
+                if (isset($menuConfig) && !is_null($menuConfig) && is_array($menuConfig) && (count($menuConfig) > 0) && array_key_exists('items', $menuConfig)) {
+                    $menuList = $menuConfig['items'];
+                    if (is_array($menuList) && (count($menuList) > 0)) {
+                        foreach ($menuList as $menuItemKey => $menuItemData) {
 
-            <?php /* ?>
+            ?>
 
-            <!--begin::Item-->
-            <li class="nav-item mb-5" data-toggle="tooltip" data-placement="right" data-container="body" data-boundary="window" title="Update Stock">
-                <a href="{{ route('stock.update') }}" class="nav-link btn btn-icon btn-icon-white btn-lg <?php if($pageTitle=='updatestock'){?>btn-clean active <?php } ?>">
-                    <img src="{{ asset('ktmt/media/update-stock.png') }}"/>
-                </a>
-            </li>
-            <!--end::Item-->
+            @if(
+                ($menuItemData['active'])
+                && (
+                    is_null($menuItemData['roles'])
+                    || (
+                        !is_null($menuUserRole)
+                        && is_array($menuItemData['roles'])
+                        && in_array($menuUserRole, $menuItemData['roles'])
+                    )
+                )
+            )
 
-            <!--begin::Item-->
-            <li class="nav-item mb-5" data-toggle="tooltip" data-placement="right" data-container="body" data-boundary="window" title="Out of Stock Report">
-                <a href="{{ route('stock.oos-report') }}" class="nav-link btn btn-icon btn-icon-white btn-lg <?php if($pageTitle=='outofstock'){?>btn-clean active <?php } ?>">
-                    <img src="{{ asset('ktmt/media/out-of-stock-report.png') }}"/>
-                </a>
-            </li>
-            <!--end::Item-->
+                @if((!is_null($menuItemData['children'])) && is_array($menuItemData['children']) && (count($menuItemData['children']) > 0))
 
-            <!--begin::Item-->
-            <li class="nav-item mb-5" data-toggle="tooltip" data-placement="right" data-container="body" data-boundary="window" title="Order Items Sales Report">
-                <a href="{{ route('sales.order-items-report') }}" class="nav-link btn btn-icon btn-icon-white btn-lg <?php if($pageTitle=='salesreport'){?>btn-clean active <?php } ?>">
-                    <img src="{{ asset('ktmt/media/order-items-sales-report.png') }}"/>
-                </a>
-            </li>
-            <!--end::Item-->
+                    <li class="nav-item dropdown">
 
-            <!--begin::Item-->
-            <li class="nav-item mb-5" data-toggle="tooltip" data-placement="right" data-container="body" data-boundary="window" title="POS System">
-                <a href="{{ route('sales.pos') }}" class="nav-link btn btn-icon btn-icon-white btn-lg <?php if($pageTitle=='search'){?>btn-clean active <?php } ?>">
-                    <img src="{{ asset('ktmt/media/pos_icon.png') }}"/>
-                </a>
-            </li>
-            <!--end::Item-->
+                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" id="main-item-{{ $menuItemKey }}">
+                            @if($menuItemData['customIcon'])
+                                <img src="{{ asset($menuItemData['icon']) }}"/>
+                            @else
+                                <i class="{{ $menuItemData['icon'] }} icon-lg"></i>
+                            @endif
+                        </a>
 
-            <!--begin::Item-->
-            <li class="nav-item mb-5" data-toggle="tooltip" data-placement="right" data-container="body" data-boundary="window" title="InStores Sales Report">
-                <a href="{{ route('sales.instore-report') }}" class="nav-link btn btn-icon btn-icon-white btn-lg <?php if($pageTitle=='salesreport'){?>btn-clean active <?php } ?>">
-                    <img src="{{ asset('ktmt/media/order-items-sales-report.png') }}"/>
-                </a>
-            </li>
-            <!--end::Item-->
+                        <ul class="dropdown-menu text-center" aria-labelledby="main-item-{{ $menuItemKey }}">
 
-            <?php */ ?>
+                            @foreach($menuItemData['children'] as $menuChildKey => $menuChildData)
+
+                                @if(
+                                    ($menuChildData['active'])
+                                    && (
+                                        is_null($menuChildData['roles'])
+                                        || (
+                                            !is_null($menuUserRole)
+                                            && is_array($menuChildData['roles'])
+                                            && in_array($menuUserRole, $menuChildData['roles'])
+                                        )
+                                    )
+                                )
+
+                                    <li data-toggle="tooltip" data-placement="right" data-container="body" data-boundary="window" title="{{ $menuChildData['toolTip'] }}">
+                                        <a href="{{ url($menuChildData['path']) }}" class="dropdown-item btn btn-icon btn-clean btn-icon-white <?php if($currentMenuUrl == $menuChildData['path']){?> active <?php } ?>">
+                                            @if($menuChildData['customIcon'])
+                                                <img src="{{ asset($menuChildData['icon']) }}"/>
+                                            @else
+                                                <i class="{{ $menuChildData['icon'] }} icon-lg"></i>
+                                            @endif
+                                        </a>
+                                    </li>
+
+                                @endif
+
+                            @endforeach
+
+                        </ul>
+                    </li>
+
+                @else
+
+                    <li class="nav-item mb-5" data-toggle="tooltip" data-placement="right" data-container="body" data-boundary="window" title="{{ $menuItemData['toolTip'] }}">
+                        <a href="{{ url($menuItemData['path']) }}" class="nav-link btn btn-icon btn-clean btn-icon-white btn-lg <?php if($currentMenuUrl == $menuItemData['path']){?> active <?php } ?>">
+                            @if($menuItemData['customIcon'])
+                                <img src="{{ asset($menuItemData['icon']) }}"/>
+                            @else
+                                <i class="{{ $menuItemData['icon'] }} icon-lg"></i>
+                            @endif
+                        </a>
+                    </li>
+
+                @endif
+
+            @endif
+
+            <?php
+
+                        }
+                    }
+                }
+            ?>
 
         </ul>
         <!--end::Nav-->
