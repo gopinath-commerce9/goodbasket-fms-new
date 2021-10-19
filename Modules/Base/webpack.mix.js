@@ -12,8 +12,11 @@ mix.copyDirectory(moduleAssetDir + '/backend', publicMainAssets + '/backend');
 mix.copyDirectory(moduleAssetDir + '/frontend', publicMainAssets + '/frontend');
 mix.copyDirectory(moduleAssetDir + '/ktmt', publicMainAssets + '/ktmt');
 
-/*mix.js(__dirname + '/Resources/assets/js/app.js', 'js/base.js')
-    .sass( __dirname + '/Resources/assets/sass/app.scss', 'css/base.css');*/
+mix.copy(moduleAssetDir + '/js/app.js', publicMainAssets + '/js/base.js');
+mix.sass(moduleAssetDir + '/sass/app.scss',  'css/base.css');
+
+/*mix.js(moduleAssetDir + '/js/app.js', 'js/base.js')
+    .sass( moduleAssetDir + '/sass/app.scss', 'css/base.css');*/
 
 if (mix.inProduction()) {
     mix.version();
