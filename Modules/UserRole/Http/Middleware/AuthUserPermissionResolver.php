@@ -173,23 +173,34 @@ class AuthUserPermissionResolver
             return true;
         }
 
-        $permissionDataArray = Permission::whereIn('code', $checkingPermissions)->get();
+        $permissionDataArray = Permission::whereIn('code', $checkingPermissions)
+            ->where('is_active', '1')
+            ->get();
         $permissionIds = [];
-        if (!is_null($permissionDataArray) && is_array($permissionDataArray) && (count($permissionDataArray) > 0)) {
+        if (!is_null($permissionDataArray) && (count($permissionDataArray) > 0)) {
             foreach ($permissionDataArray as $permEl) {
                 $permissionIds[] = $permEl->id;
             }
         }
 
         if (count($permissionIds) > 0) {
+
+            $permittedInactiveArray = PermissionMap::whereIn('permission_id', $permissionIds)
+                ->where('role_id', $currentRoleId)
+                ->where('is_active', '1')
+                ->get();
+            if (is_null($permittedInactiveArray) || (count($permittedInactiveArray) == 0)) {
+                return true;
+            }
+
             $permittedArray = PermissionMap::whereIn('permission_id', $permissionIds)
                 ->where('role_id', $currentRoleId)
                 ->where('permitted', '1')
                 ->get();
-
-            if (is_null($permittedArray) || (is_array($permittedArray) && (count($permittedArray) == 0))) {
+            if (is_null($permittedArray) || (count($permittedArray) == 0)) {
                 return false;
             }
+
         }
 
         return true;
