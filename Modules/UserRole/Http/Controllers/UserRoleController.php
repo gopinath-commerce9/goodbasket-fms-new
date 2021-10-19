@@ -5,6 +5,7 @@ namespace Modules\UserRole\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\UserRole\Entities\UserRole;
 
 class UserRoleController extends Controller
 {
@@ -14,7 +15,19 @@ class UserRoleController extends Controller
      */
     public function index()
     {
-        return view('userrole::index');
+        $pageTitle = 'Fulfillment Center';
+        $pageSubTitle = 'User Roles';
+
+        $userRoleList = UserRole::all();
+
+        $userRolesTotal = $userRoleList->count();
+
+        return view('userrole::roles.list', compact(
+            'pageTitle',
+            'pageSubTitle',
+            'userRoleList',
+            'userRolesTotal'
+        ));
     }
 
     /**
@@ -38,20 +51,20 @@ class UserRoleController extends Controller
 
     /**
      * Show the specified resource.
-     * @param int $id
+     * @param int $roleId
      * @return Renderable
      */
-    public function show($id)
+    public function show($roleId)
     {
         return view('userrole::show');
     }
 
     /**
      * Show the form for editing the specified resource.
-     * @param int $id
+     * @param int $roleId
      * @return Renderable
      */
-    public function edit($id)
+    public function edit($roleId)
     {
         return view('userrole::edit');
     }
@@ -59,20 +72,20 @@ class UserRoleController extends Controller
     /**
      * Update the specified resource in storage.
      * @param Request $request
-     * @param int $id
+     * @param int $roleId
      * @return Renderable
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $roleId)
     {
         //
     }
 
     /**
      * Remove the specified resource from storage.
-     * @param int $id
+     * @param int $roleId
      * @return Renderable
      */
-    public function destroy($id)
+    public function destroy($roleId)
     {
         //
     }
