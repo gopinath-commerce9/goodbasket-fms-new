@@ -5,3 +5,7 @@
     touch-action: auto;
     -ms-touch-action: auto;
 }
+
+textarea.form-control {
+    resize: none;
+}

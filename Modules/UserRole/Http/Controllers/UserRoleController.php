@@ -4,6 +4,11 @@ namespace Modules\UserRole\Http\Controllers;
 
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
+use Input;
+use Modules\UserRole\Entities\PermissionMap;
+use Modules\UserRole\Entities\UserRoleMap;
+use Redirect;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Routing\Controller;
 use Modules\UserRole\Entities\UserRole;
 
@@ -36,7 +41,13 @@ class UserRoleController extends Controller
      */
     public function create()
     {
-        return view('userrole::create');
+        $pageTitle = 'Fulfillment Center';
+        $pageSubTitle = 'New User Role';
+
+        return view('userrole::roles.new', compact(
+            'pageTitle',
+            'pageSubTitle'
+        ));
     }
 
     /**
@@ -46,7 +57,61 @@ class UserRoleController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        $validator = Validator::make($request->all() , [
+            'role_code'   => 'required|alpha_dash',
+            'role_name' => 'nullable|string|min:6',
+            'role_desc' => 'nullable|string|min:6',
+            'role_active' => 'required|boolean',
+        ], [
+            'role_code.required' => 'The Role Code should be provided.',
+            'role_code.alpha_dash' => 'The Role Code should contain only alphabets, numbers, dashes(-) or underscores(_).',
+            'role_name.string' => 'The Role Name should be a string value.',
+            'role_name.min' => 'The Role Name should be minimum :min characters.',
+            'role_desc.string' => 'The Role Description should be a string value.',
+            'role_desc.min' => 'The Role Description should be minimum :min characters.',
+            'role_active.required' => 'The Role Active status should be provided.',
+            'role_active.boolean' => 'The Role Active status should be boolean ("1" or "0") value.'
+        ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput($request->only('role_code', 'role_name', 'role_desc', 'role_active'));
+        }
+
+        $roleCode = $request->input('role_code');
+        $roleName = $request->input('role_name');
+        $roleDesc = $request->input('role_desc');
+        $roleActive = $request->input('role_active');
+
+        $cleanRoleCode = strtolower(str_replace(' ', '_', trim($roleCode)));
+
+        if (UserRole::firstWhere('code', $cleanRoleCode)) {
+            return back()
+                ->with('error', 'The User Role Code is already used!')
+                ->withInput($request->only('role_code', 'role_name', 'role_desc', 'role_active'));
+        }
+
+        $cleanRoleName = ($roleName) ? $roleName : ucwords(str_replace('_', ' ', $cleanRoleCode));
+
+        try {
+
+            $roleObj = new UserRole();
+            $roleObj->code = $cleanRoleCode;
+            $roleObj->display_name = $cleanRoleName;
+            $roleObj->description = $roleDesc;
+            $roleObj->is_active = $roleActive;
+            $roleObj->save();
+
+            return redirect()->route('roles.index')->with('success', 'The User Role is added successfully!');
+
+        } catch(Exception $e) {
+            return back()
+                ->with('error', $e->getMessage())
+                ->withInput($request->only('role_code', 'role_name', 'role_desc', 'role_active'));
+        }
+
     }
 
     /**
@@ -56,7 +121,26 @@ class UserRoleController extends Controller
      */
     public function show($roleId)
     {
-        return view('userrole::show');
+
+        if (is_null($roleId) || !is_numeric($roleId) || ((int)$roleId <= 0)) {
+            return back()
+                ->with('error', 'The User Role Id input is invalid!');
+        }
+
+        $givenUserRole = UserRole::find($roleId);
+        if(!$givenUserRole) {
+            return back()
+                ->with('error', 'The User Role does not exist!');
+        }
+
+        $pageTitle = 'Fulfillment Center';
+        $pageSubTitle = 'User Role #' . $givenUserRole->code;
+
+        return view('userrole::roles.view', compact(
+            'pageTitle',
+            'pageSubTitle',
+            'givenUserRole'
+        ));
     }
 
     /**
@@ -66,7 +150,27 @@ class UserRoleController extends Controller
      */
     public function edit($roleId)
     {
-        return view('userrole::edit');
+
+        if (is_null($roleId) || !is_numeric($roleId) || ((int)$roleId <= 0)) {
+            return back()
+                ->with('error', 'The User Role Id input is invalid!');
+        }
+
+        $givenUserRole = UserRole::find($roleId);
+        if(!$givenUserRole) {
+            return back()
+                ->with('error', 'The User Role does not exist!');
+        }
+
+        $pageTitle = 'Fulfillment Center';
+        $pageSubTitle = 'Edit User Role #' . $givenUserRole->code;
+
+        return view('userrole::roles.edit', compact(
+            'pageTitle',
+            'pageSubTitle',
+            'givenUserRole'
+        ));
+
     }
 
     /**
@@ -77,7 +181,69 @@ class UserRoleController extends Controller
      */
     public function update(Request $request, $roleId)
     {
-        //
+
+        if (is_null($roleId) || !is_numeric($roleId) || ((int)$roleId <= 0)) {
+            return back()
+                ->with('error', 'The User Role Id input is invalid!');
+        }
+
+        $givenUserRole = UserRole::find($roleId);
+        if(!$givenUserRole) {
+            return back()
+                ->with('error', 'The User Role does not exist!');
+        }
+
+        $validator = Validator::make($request->all() , [
+            'role_name' => 'nullable|string|min:6',
+            'role_desc' => 'nullable|string|min:6',
+            'role_active' => 'required|boolean',
+        ], [
+            'role_name.string' => 'The Role Name should be a string value.',
+            'role_name.min' => 'The Role Name should be minimum :min characters.',
+            'role_desc.string' => 'The Role Description should be a string value.',
+            'role_desc.min' => 'The Role Description should be minimum :min characters.',
+            'role_active.required' => 'The Role Active status should be provided.',
+            'role_active.boolean' => 'The Role Active status should be boolean ("1" or "0") value.'
+        ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput($request->only('role_name', 'role_desc', 'role_active'));
+        }
+
+        $roleName = $request->input('role_name');
+        $roleDesc = $request->input('role_desc');
+        $roleActive = $request->input('role_active');
+
+        if ($givenUserRole->isAdmin() && (($roleActive == 0) || ($roleActive === false))) {
+            return back()
+                ->with('error', "The User Role 'Administrator' cannot be set as 'Inactive'!");
+        }
+
+        $cleanRoleName = ($roleName) ? $roleName : ucwords(str_replace('_', ' ', $givenUserRole->code));
+
+        try {
+
+            $givenUserRole->display_name = $cleanRoleName;
+            $givenUserRole->description = $roleDesc;
+            $givenUserRole->is_active = $roleActive;
+            $givenUserRole->save();
+
+            UserRoleMap::where('role_id', $givenUserRole->id)
+                ->update(['is_active' => $roleActive]);
+
+            PermissionMap::where('role_id', $givenUserRole->id)
+                ->update(['is_active' => $roleActive]);
+
+            return redirect()->route('roles.index')->with('success', 'The User Role is updated successfully!');
+
+        } catch(Exception $e) {
+            return back()
+                ->with('error', $e->getMessage())
+                ->withInput($request->only('role_name', 'role_desc', 'role_active'));
+        }
+
     }
 
     /**
@@ -87,6 +253,32 @@ class UserRoleController extends Controller
      */
     public function destroy($roleId)
     {
-        //
+
+        if (is_null($roleId) || !is_numeric($roleId) || ((int)$roleId <= 0)) {
+            return back()
+                ->with('error', 'The User Role Id input is invalid!');
+        }
+
+        $targetRoleObj = UserRole::find($roleId);
+        if(!$targetRoleObj) {
+            return back()
+                ->with('error', 'The User Role does not exist!');
+        }
+
+        if ($targetRoleObj->isAdmin()) {
+            return back()
+                ->with('error', "The User Role 'Administrator' cannot be deleted!");
+        }
+
+        try {
+
+            UserRole::destroy($roleId);
+            return redirect()->route('roles.index')->with('success', 'The User Role is deleted successfully!');
+
+        } catch(Exception $e) {
+            return back()
+                ->with('error', $e->getMessage());
+        }
+
     }
 }
