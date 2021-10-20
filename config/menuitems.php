@@ -14,6 +14,16 @@ return [
             'children' => null,
         ],
         [
+            'name' => 'User Roles',
+            'path' => '/userrole/roles',
+            'icon' => 'fas fa-user-tie',
+            'customIcon' => false,
+            'toolTip' => 'User Roles',
+            'roles' => ['admin'],
+            'active' => true,
+            'children' => null,
+        ],
+        [
             'name' => 'Update Stock',
             'path' => '/stock/update',
             'icon' => 'ktmt/media/update-stock.png',
