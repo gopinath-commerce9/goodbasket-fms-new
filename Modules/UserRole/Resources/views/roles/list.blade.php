@@ -26,9 +26,9 @@
                     <!--begin::Card Toolbar-->
                     <div class="card-toolbar">
 
-                    @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.create'))
-                        <!--begin::Button-->
-                            <a href="{{ url('/userroles/role/new') }}" class="btn btn-primary font-weight-bolder">
+                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.create'))
+                            <!--begin::Button-->
+                            <a href="{{ url('/userrole/roles/new') }}" class="btn btn-primary font-weight-bolder">
                                 <i class="la la-plus"></i>New User Role
                             </a>
                             <!--end::Button-->
@@ -82,21 +82,23 @@
                                     <td nowrap="nowrap">
 
                                         @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.view'))
-                                            <a href="{{ url('/userroles/role/view/' . $userRoleEl->id) }}" class="btn btn-sm btn-clean btn-icon mr-2" title="View">
+                                            <a href="{{ url('/userrole/roles/view/' . $userRoleEl->id) }}" class="btn btn-sm btn-clean btn-icon mr-2" title="View">
                                                 <i class="flaticon2-list-2 text-info"></i>
                                             </a>
                                         @endif
 
                                         @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.update'))
-                                            <a href="{{ url('/userroles/role/edit/' . $userRoleEl->id) }}" class="btn btn-sm btn-clean btn-icon mr-2" title="Edit">
+                                            <a href="{{ url('/userrole/roles/edit/' . $userRoleEl->id) }}" class="btn btn-sm btn-clean btn-icon mr-2" title="Edit">
                                                 <i class="flaticon2-pen text-warning"></i>
                                             </a>
                                         @endif
 
                                         @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.delete'))
-                                            <a href="{{ url('/userroles/role/delete/' . $userRoleEl->id) }}" class="btn btn-sm btn-clean btn-icon" title="Delete">
-                                                <i class="flaticon-delete-1 text-danger"></i>
-                                            </a>
+                                            @if(!$userRoleEl->isAdmin())
+                                                <a href="{{ url('/userrole/roles/delete/' . $userRoleEl->id) }}" class="btn btn-sm btn-clean btn-icon" title="Delete">
+                                                    <i class="flaticon-delete-1 text-danger"></i>
+                                                </a>
+                                            @endif
                                         @endif
 
                                     </td>

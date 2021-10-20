@@ -6,3 +6,7 @@
   -ms-touch-action: auto;
 }
 
+textarea.form-control {
+  resize: none;
+}
+
