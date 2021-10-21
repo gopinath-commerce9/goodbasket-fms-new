@@ -92,7 +92,7 @@ class AuthUserPermissionResolver
         $currentUserId = null;
         $currentUserName = null;
 
-        if (!is_null($role)) {
+        if (!is_null($role) && $role->is_active) {
             $currentRoleId = $role->id;
             $currentRole = $role->code;
         }
@@ -104,10 +104,10 @@ class AuthUserPermissionResolver
 
         if (is_null($currentRoleId) && !is_null($currentUserId)) {
             $roleMapData = UserRoleMap::firstWhere('user_id', $currentUserId);
-            if ($roleMapData) {
+            if ($roleMapData && $roleMapData->is_active) {
                 $mappedRoleId = $roleMapData->role_id;
                 $roleData = UserRole::find($mappedRoleId);
-                if ($roleData) {
+                if ($roleData && $roleData->is_active) {
                     $currentRoleId = $roleData->id;
                     $currentRole = $roleData->code;
                 }
@@ -129,10 +129,10 @@ class AuthUserPermissionResolver
                 $currentUserId = $userDataArray['id'];
                 $currentUserName = $userDataArray['email'];
                 $roleMapData = UserRoleMap::firstWhere('user_id', $currentUserId);
-                if ($roleMapData) {
+                if ($roleMapData && $roleMapData->is_active) {
                     $mappedRoleId = $roleMapData->role_id;
                     $roleData = UserRole::find($mappedRoleId);
-                    if ($roleData) {
+                    if ($roleData  && $roleData->is_active) {
                         $currentRoleId = $roleData->id;
                         $currentRole = $roleData->code;
                     }

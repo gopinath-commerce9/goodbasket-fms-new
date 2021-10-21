@@ -96,14 +96,11 @@
 
 @section('custom-js-section')
 
+    <script src="{{ asset('js/userrole.js') }}"></script>
     <script>
-
         jQuery(document).ready(function() {
-            jQuery('button#edit_user_role_cancel_btn').on('click', function(e) {
-                window.location = '{{ url('/userrole/roles') }}';
-            });
+            UserRolesCustomJsBlocks.editPage('{{ url('/') }}');
         });
-
     </script>
 
 @endsection

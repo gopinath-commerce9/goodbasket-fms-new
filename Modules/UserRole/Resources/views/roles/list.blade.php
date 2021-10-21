@@ -125,6 +125,11 @@
 @section('custom-js-section')
 
     <script src="{{ asset('js/userrole.js') }}"></script>
+    <script>
+        jQuery(document).ready(function() {
+            UserRolesCustomJsBlocks.listPage();
+        });
+    </script>
 
 @endsection
 
