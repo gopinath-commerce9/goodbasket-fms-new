@@ -14,6 +14,16 @@ return [
             'children' => null,
         ],
         [
+            'name' => 'Users',
+            'path' => '/userauth/users',
+            'icon' => 'fas fa-user-friends',
+            'customIcon' => false,
+            'toolTip' => 'Users',
+            'roles' => ['admin'],
+            'active' => true,
+            'children' => null,
+        ],
+        [
             'name' => 'User Roles',
             'path' => '/userrole/roles',
             'icon' => 'fas fa-user-tie',
