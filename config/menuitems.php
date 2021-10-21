@@ -34,6 +34,16 @@ return [
             'children' => null,
         ],
         [
+            'name' => 'User Role Permissions',
+            'path' => '/userrole/permissions',
+            'icon' => 'fas fa-tasks',
+            'customIcon' => false,
+            'toolTip' => 'User Role Permissions',
+            'roles' => ['admin'],
+            'active' => true,
+            'children' => null,
+        ],
+        [
             'name' => 'Update Stock',
             'path' => '/stock/update',
             'icon' => 'ktmt/media/update-stock.png',

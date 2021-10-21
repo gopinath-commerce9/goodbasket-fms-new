@@ -6,5 +6,6 @@
     "/css/userrole.css": "/css/userrole.css",
     "/js/userrole.js": "/js/userrole.js",
     "/css/users.css": "/css/users.css",
-    "/js/users.js": "/js/users.js"
+    "/js/users.js": "/js/users.js",
+    "/js/permission.js": "/js/permission.js"
 }
