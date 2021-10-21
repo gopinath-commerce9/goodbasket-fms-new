@@ -4,5 +4,7 @@
     "/js/base.js": "/js/base.js",
     "/css/base.css": "/css/base.css",
     "/css/userrole.css": "/css/userrole.css",
-    "/js/userrole.js": "/js/userrole.js"
+    "/js/userrole.js": "/js/userrole.js",
+    "/css/users.css": "/css/users.css",
+    "/js/users.js": "/js/users.js"
 }
