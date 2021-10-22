@@ -103,13 +103,15 @@
                                         @foreach($givenPermissionList as $userPermissionEl)
 
                                             <?php
-                                            $filteredPermissions = array_filter($mappedUserPermissionsArray, function($value) use ($userPermissionEl) {
-                                                return $value['id'] === $userPermissionEl->id;
-                                            });
-                                            $filteredUserPermission = null;
-                                            if (count($filteredPermissions) > 0) {
-                                                $filteredUserPermission = array_values($filteredPermissions)[0];
-                                            }
+                                                $filteredUserPermission = null;
+                                                if ($mappedUserPermissionsArray) {
+                                                    $filteredPermissions = array_filter($mappedUserPermissionsArray, function($value) use ($userPermissionEl) {
+                                                        return $value['id'] === $userPermissionEl->id;
+                                                    });
+                                                    if (count($filteredPermissions) > 0) {
+                                                        $filteredUserPermission = array_values($filteredPermissions)[0];
+                                                    }
+                                                }
                                             ?>
 
                                             <tr>

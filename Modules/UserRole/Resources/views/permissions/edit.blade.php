@@ -103,12 +103,14 @@
                                             @foreach($givenRoleList as $userRoleEl)
 
                                                 <?php
-                                                    $filteredRoles = array_filter($mappedUserRolesArray, function($value) use ($userRoleEl) {
-                                                        return $value['id'] === $userRoleEl->id;
-                                                    });
                                                     $filteredUserRole = null;
-                                                    if (count($filteredRoles) > 0) {
-                                                        $filteredUserRole = array_values($filteredRoles)[0];
+                                                    if ($mappedUserRolesArray) {
+                                                        $filteredRoles = array_filter($mappedUserRolesArray, function($value) use ($userRoleEl) {
+                                                            return $value['id'] === $userRoleEl->id;
+                                                        });
+                                                        if (count($filteredRoles) > 0) {
+                                                            $filteredUserRole = array_values($filteredRoles)[0];
+                                                        }
                                                     }
                                                 ?>
 
