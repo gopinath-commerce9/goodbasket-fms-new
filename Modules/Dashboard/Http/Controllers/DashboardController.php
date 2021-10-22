@@ -5,6 +5,8 @@ namespace Modules\Dashboard\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Input;
+use Modules\Dashboard\Entities\DashboardServiceHelper;
 
 class DashboardController extends Controller
 {
@@ -17,7 +19,29 @@ class DashboardController extends Controller
     {
         $pageTitle = 'Fulfillment Center';
         $pageSubTitle = 'Dashboard';
-        return view('dashboard::index', compact('pageTitle', 'pageSubTitle'));
+
+        $emirates = config('goodbasket.emirates');
+        $serviceHelper = new DashboardServiceHelper();
+
+        $selectedEmirate = (
+            $request->has('emirate')
+            && (trim($request->input('emirate')) != '')
+            && array_key_exists(trim($request->input('emirate')), $emirates)
+        ) ? trim($request->input('emirate')) : 'DXB';
+
+        $regionOrderCount = $serviceHelper->getOrdersCountByRegion($selectedEmirate);
+        $todayDate = date('Y-m-d');
+        $driverData = $serviceHelper->getDriversByDate($todayDate);
+
+        return view('dashboard::index', compact(
+            'pageTitle',
+            'pageSubTitle',
+            'emirates',
+            'selectedEmirate',
+            'regionOrderCount',
+            'todayDate',
+            'driverData',
+        ));
     }
 
     /**
