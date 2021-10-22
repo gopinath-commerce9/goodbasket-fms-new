@@ -26,12 +26,12 @@
                     <!--begin::Card Toolbar-->
                     <div class="card-toolbar">
 
-                    @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-role-permissions.create'))
+                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-role-permissions.create'))
                         <!--begin::Button-->
-                            <a href="{{ url('/userrole/permissions/new') }}" class="btn btn-primary font-weight-bolder">
-                                <i class="la la-plus"></i>New Permission
-                            </a>
-                            <!--end::Button-->
+                        <a href="{{ url('/userrole/permissions/new') }}" class="btn btn-primary font-weight-bolder">
+                            <i class="la la-plus"></i>New Permission
+                        </a>
+                        <!--end::Button-->
                         @endif
 
                     </div>
@@ -47,16 +47,16 @@
                         <table class="table table-bordered table-checkable" id="user_permissions_table">
 
                             <thead>
-                            <tr>
-                                <th> ID </th>
-                                <th>Code</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Active</th>
-                                <th>Created At</th>
-                                <th>Updated At</th>
-                                <th>Action</th>
-                            </tr>
+                                <tr>
+                                    <th> ID </th>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Active</th>
+                                    <th>Created At</th>
+                                    <th>Updated At</th>
+                                    <th>Action</th>
+                                </tr>
                             </thead>
 
                             <tbody>

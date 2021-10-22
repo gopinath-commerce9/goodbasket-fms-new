@@ -17,9 +17,9 @@ var UserPermissionsCustomJsBlocks = function() {
 
     };
 
-    var initUserRoleUserTable = function() {
+    var initUserPermissionRoleTable = function() {
 
-        var table = $('#role_user_list_table');
+        var table = $('#permission_role_list_table');
 
         table.DataTable({
             responsive: true,
@@ -38,16 +38,16 @@ var UserPermissionsCustomJsBlocks = function() {
             initUserRoleTable();
         },
         viewPage: function() {
-            initUserRoleUserTable();
+            initUserPermissionRoleTable();
         },
         newPage: function(hostUrl) {
-            jQuery('button#new_user_role_cancel_btn').on('click', function(e) {
-                window.location = hostUrl + '/userrole/roles';
+            jQuery('button#new_user_permission_cancel_btn').on('click', function(e) {
+                window.location = hostUrl + '/userrole/permissions';
             });
         },
         editPage: function(hostUrl) {
-            jQuery('button#edit_user_role_cancel_btn').on('click', function(e) {
-                window.location = hostUrl + '/userrole/roles';
+            jQuery('button#edit_user_permission_cancel_btn').on('click', function(e) {
+                window.location = hostUrl + '/userrole/permissions';
             });
         }
     };
