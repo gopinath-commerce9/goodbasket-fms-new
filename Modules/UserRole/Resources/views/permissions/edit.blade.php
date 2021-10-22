@@ -89,6 +89,7 @@
 
                                         <thead>
                                             <tr>
+                                                <th>Id</th>
                                                 <th>Code</th>
                                                 <th>Name</th>
                                                 <th>Active</th>
@@ -102,16 +103,19 @@
                                             @foreach($givenRoleList as $userRoleEl)
 
                                                 <?php
-                                                    $filteredRoles = array_filter($mappedUserRolesArray, function($value) use ($userRoleEl) {
-                                                        return $value['id'] === $userRoleEl->id;
-                                                    });
                                                     $filteredUserRole = null;
-                                                    if (count($filteredRoles) > 0) {
-                                                        $filteredUserRole = array_values($filteredRoles)[0];
+                                                    if ($mappedUserRolesArray) {
+                                                        $filteredRoles = array_filter($mappedUserRolesArray, function($value) use ($userRoleEl) {
+                                                            return $value['id'] === $userRoleEl->id;
+                                                        });
+                                                        if (count($filteredRoles) > 0) {
+                                                            $filteredUserRole = array_values($filteredRoles)[0];
+                                                        }
                                                     }
                                                 ?>
 
                                                 <tr>
+                                                    <td>{{ $userRoleEl->id }}</td>
                                                     <td>{{ $userRoleEl->code }}</td>
                                                     <td>{{ $userRoleEl->display_name }}</td>
                                                     <td>
@@ -162,8 +166,6 @@
 
                                     </table>
                                 </div>
-
-
 
                             </div>
                         </div>
