@@ -4,5 +4,6 @@
     "Vehicle": true,
     "Base": true,
     "UserAuth": true,
-    "Dashboard": true
+    "Dashboard": true,
+    "Sales": true
 }
