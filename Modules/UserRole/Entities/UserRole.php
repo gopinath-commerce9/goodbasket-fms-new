@@ -74,7 +74,7 @@ class UserRole extends Model
             (new PermissionMap())->getTable(),
             'role_id',
             'permission_id'
-        )->withPivot('is_active')->withTimestamps();
+        )->withPivot('permitted', 'is_active')->withTimestamps();
     }
 
     /**

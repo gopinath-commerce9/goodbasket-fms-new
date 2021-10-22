@@ -16,55 +16,47 @@
 
                     <!--begin::Card Toolbar-->
                     <div class="card-toolbar">
+                        <div class="col text-left">
+                            <a href="{{ url('/userrole/roles') }}" class="btn btn-outline-primary">
+                                <i class="flaticon2-back"></i> Back
+                            </a>
+                        </div>
+                    </div>
+                    <!--end::Card Toolbar-->
+
+                    <!--begin::Card Toolbar-->
+                    <div class="card-toolbar">
 
                         <!--begin::Card Tabs-->
                         <ul class="nav nav-light-info nav-bold nav-pills">
+
                             <li class="nav-item">
                                 <a class="nav-link active" data-toggle="tab" href="#user_role_view_info_tab">
                                     <span class="nav-text">Info</span>
                                 </a>
                             </li>
-                            {{--<li class="nav-item">
+
+                            @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('users.view'))
+                            <li class="nav-item">
                                 <a class="nav-link" data-toggle="tab" href="#user_role_view_users_tab">
                                     <span class="nav-text">Users</span>
                                 </a>
                             </li>
+                            @endif
+
+                            @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-role-permissions.view'))
                             <li class="nav-item">
                                 <a class="nav-link" data-toggle="tab" href="#user_role_view_permissions_tab">
                                     <span class="nav-text">Permissions</span>
                                 </a>
-                            </li>--}}
+                            </li>
+                            @endif
+
                         </ul>
                         <!--end::Card Tabs-->
 
                     </div>
                     <!--end::Card Toolbar-->
-
-                    <div class="card-toolbar">
-                        <div class="dropdown dropdown-inline">
-                            <button type="button" class="btn btn-hover-light-primary btn-icon btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="ki ki-bold-more-hor "></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-sm dropdown-menu-right">
-                                @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.update'))
-                                    <a href="{{ url('/userrole/roles/edit/' . $givenUserRole->id) }}" class="dropdown-item btn" title="Edit">
-                                        Edit
-                                    </a>
-                                @endif
-                                @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.delete'))
-                                    @if(!$givenUserRole->isAdmin())
-                                        <a href="{{ url('/userrole/roles/delete/' . $givenUserRole->id) }}" class="dropdown-item btn" title="Delete">
-                                            Delete
-                                        </a>
-                                    @endif
-                                @endif
-                                <div class="dropdown-divider"></div>
-                                <a href="{{ url('/userrole/roles') }}" class="dropdown-item btn">
-                                    Back
-                                </a>
-                            </div>
-                        </div>
-                    </div>
 
                 </div>
                 <!--end::Card Header-->
@@ -76,6 +68,29 @@
                     <div class="tab-content">
 
                         <div class="tab-pane fade show active" id="user_role_view_info_tab" role="tabpanel" aria-labelledby="user_role_view_info_tab">
+
+                            <div class="form-group row my-2">
+
+                                <div class="col col-2 text-right">
+                                    <span class="label label-xl label-dark font-weight-boldest label-inline mr-2">General Info</span>
+                                </div>
+
+                                <div class="col col-10 text-right">
+                                    @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.update'))
+                                        <a href="{{ url('/userrole/roles/edit/' . $givenUserRole->id) }}" class="btn btn-warning mr-2" title="Edit">
+                                            <i class="flaticon2-pen"></i> Edit
+                                        </a>
+                                    @endif
+                                    @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.delete'))
+                                        @if(!$givenUserRole->isAdmin())
+                                            <a href="{{ url('/userrole/roles/delete/' . $givenUserRole->id) }}" class="btn btn-danger mr-2" title="Delete">
+                                                <i class="flaticon-delete-1"></i> Delete
+                                            </a>
+                                        @endif
+                                    @endif
+                                </div>
+
+                            </div>
 
                             <div class="form-group row my-2">
                                 <label class="col-2 col-form-label font-size-lg-h2 text-right">Code:</label>
@@ -113,13 +128,169 @@
 
                         </div>
 
-                        {{--<div class="tab-pane fade" id="user_role_view_users_tab" role="tabpanel" aria-labelledby="user_role_view_users_tab">
-                            ...
-                        </div>
+                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('users.view'))
+                        <div class="tab-pane fade" id="user_role_view_users_tab" role="tabpanel" aria-labelledby="user_role_view_users_tab">
 
+                            <div class="form-group row my-2">
+
+                                <div class="col col-12 text-center">
+                                    <span class="label label-xl label-dark font-weight-boldest label-inline mr-2">Users List</span>
+                                </div>
+
+                            </div>
+
+                            <div class="form-group row my-2">
+                                @if($givenUserRole->mappedUsers && (count($givenUserRole->mappedUsers) > 0))
+
+                                    <div class="col col-12 text-center">
+
+                                        <div  class="table-responsive">
+                                            <table class="table table-bordered table-checkable" id="role_user_list_table">
+
+                                                <thead>
+                                                    <tr>
+                                                        <th rowspan="2"> ID </th>
+                                                        <th rowspan="2">Name</th>
+                                                        <th rowspan="2">EMail</th>
+                                                        <th colspan="4">Role ({{ $givenUserRole->code }})</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Active</th>
+                                                        <th>Created At</th>
+                                                        <th>Updated At</th>
+                                                    </tr>
+                                                </thead>
+
+                                                <tbody>
+
+                                                    @foreach($givenUserRole->mappedUsers as $userEl)
+                                                    <tr>
+                                                        <td>{{ $userEl->id }}</td>
+                                                        <td>{{ $userEl->name }}</td>
+                                                        <td>{{ $userEl->email }}</td>
+                                                        <td>
+                                                            @if($userEl->pivot->is_active == 0)
+                                                                <span class="label label-lg font-weight-bold label-light-danger label-inline">Inactive</span>
+                                                            @elseif($userEl->pivot->is_active == 1)
+                                                                <span class="label label-lg font-weight-bold label-light-success label-inline">Active</span>
+                                                            @else
+                                                                {{ $userEl->pivot->is_active }}
+                                                            @endif
+                                                        </td>
+                                                        <td>{{ date('Y-m-d H:i:s', strtotime($userEl->pivot->created_at)) }}</td>
+                                                        <td>{{ date('Y-m-d H:i:s', strtotime($userEl->pivot->updated_at)) }}</td>
+                                                    </tr>
+                                                    @endforeach
+
+                                                </tbody>
+
+                                            </table>
+                                        </div>
+
+                                    </div>
+
+                                @else
+                                    <label class="col-12 col-form-label font-size-lg-h2 text-center">No Users yet!</label>
+                                @endif
+                            </div>
+
+                        </div>
+                        @endif
+
+                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-role-permissions.view'))
                         <div class="tab-pane fade" id="user_role_view_permissions_tab" role="tabpanel" aria-labelledby="user_role_view_permissions_tab">
-                            ...
-                        </div>--}}
+
+                            <div class="form-group row my-2">
+
+                                <div class="col col-12 text-center">
+                                    <span class="label label-xl label-dark font-weight-boldest label-inline mr-2">Permission List</span>
+                                </div>
+
+                            </div>
+
+                            <div class="form-group row my-2">
+                                @if($givenUserRole->mappedPermissions && (count($givenUserRole->mappedPermissions) > 0))
+
+                                    <div class="col col-12 text-center">
+
+                                        <div  class="table-responsive">
+                                            <table class="table table-bordered table-checkable" id="role_permission_list_table">
+
+                                                <thead>
+                                                    <tr>
+                                                        <th rowspan="2"> ID </th>
+                                                        <th rowspan="2">Code</th>
+                                                        <th rowspan="2">Name</th>
+                                                        <th rowspan="2">Description</th>
+                                                        <th rowspan="2">Active</th>
+                                                        <th colspan="4">Role ({{ $givenUserRole->code }})</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Permitted</th>
+                                                        <th>Active</th>
+                                                        <th>Created At</th>
+                                                        <th>Updated At</th>
+                                                    </tr>
+                                                </thead>
+
+                                                <tbody>
+
+                                                    @foreach($givenUserRole->mappedPermissions as $userPermissionEl)
+                                                    <tr>
+                                                        <td>{{ $userPermissionEl->id }}</td>
+                                                        <td>{{ $userPermissionEl->code }}</td>
+                                                        <td>
+                                                            <span class="label label-lg font-weight-bold label-light-primary label-inline">
+                                                                {{ $userPermissionEl->display_name }}
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ $userPermissionEl->description }}</td>
+                                                        <td>
+                                                            @if($userPermissionEl->is_active == 0)
+                                                                <span class="label label-lg font-weight-bold label-light-danger label-inline">Inactive</span>
+                                                            @elseif($userPermissionEl->is_active == 1)
+                                                                <span class="label label-lg font-weight-bold label-light-success label-inline">Active</span>
+                                                            @else
+                                                                {{ $userPermissionEl->is_active }}
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if($userPermissionEl->pivot->permitted == 0)
+                                                                <span class="label label-lg font-weight-bold label-light-danger label-inline">Not Permitted</span>
+                                                            @elseif($userPermissionEl->pivot->permitted == 1)
+                                                                <span class="label label-lg font-weight-bold label-light-success label-inline">Permitted</span>
+                                                            @else
+                                                                {{ $userPermissionEl->pivot->permitted }}
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if($userPermissionEl->pivot->is_active == 0)
+                                                                <span class="label label-lg font-weight-bold label-light-danger label-inline">Inactive</span>
+                                                            @elseif($userPermissionEl->pivot->is_active == 1)
+                                                                <span class="label label-lg font-weight-bold label-light-success label-inline">Active</span>
+                                                            @else
+                                                                {{ $userPermissionEl->pivot->is_active }}
+                                                            @endif
+                                                        </td>
+                                                        <td>{{ date('Y-m-d H:i:s', strtotime($userPermissionEl->pivot->created_at)) }}</td>
+                                                        <td>{{ date('Y-m-d H:i:s', strtotime($userPermissionEl->pivot->updated_at)) }}</td>
+                                                    </tr>
+                                                    @endforeach
+
+                                                </tbody>
+
+                                            </table>
+                                        </div>
+
+                                    </div>
+
+                                @else
+                                    <label class="col-12 col-form-label font-size-lg-h2 text-center">No Permissions yet!</label>
+                                @endif
+                            </div>
+
+                        </div>
+                        @endif
 
                     </div>
                     <!--end::Card Tab Content-->
@@ -130,25 +301,7 @@
                 <!--begin::Card Footer-->
                 <div class="card-footer text-right">
                     <div class="row">
-                        <div class="col text-left">
-                            <a href="{{ url('/userrole/roles') }}" class="btn btn-outline-primary">
-                                <i class="flaticon2-back"></i> Back
-                            </a>
-                        </div>
-                        <div class="col text-right">
-                            @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.update'))
-                                <a href="{{ url('/userrole/roles/edit/' . $givenUserRole->id) }}" class="btn btn-warning mr-2" title="Edit">
-                                    <i class="flaticon2-pen"></i> Edit
-                                </a>
-                            @endif
-                            @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.delete'))
-                                @if(!$givenUserRole->isAdmin())
-                                    <a href="{{ url('/userrole/roles/delete/' . $givenUserRole->id) }}" class="btn btn-danger mr-2" title="Delete">
-                                        <i class="flaticon-delete-1"></i> Delete
-                                    </a>
-                                @endif
-                            @endif
-                        </div>
+
                     </div>
                 </div>
                 <!--end::Card Footer-->
@@ -161,5 +314,16 @@
 
         </div>
     </div>
+
+@endsection
+
+@section('custom-js-section')
+
+    <script src="{{ asset('js/userrole.js') }}"></script>
+    <script>
+        jQuery(document).ready(function() {
+            UserRolesCustomJsBlocks.viewPage();
+        });
+    </script>
 
 @endsection

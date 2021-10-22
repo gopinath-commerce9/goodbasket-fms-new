@@ -33,7 +33,7 @@
                 <!--end::Card Header-->
 
                 <!--begin::Form-->
-                <form class="form" id="user_role_edit_form" action="{{ url('/userrole/roles/update/' . $givenUserRole->id) }}" method="post">
+                <form class="form" id="user_role_new_form" action="{{ url('/userrole/permissions/store') }}" method="post">
 
                     @csrf
 
@@ -41,32 +41,35 @@
                     <div class="card-body">
 
                         <div class="form-group row mt-4">
-                            <label  class="col-3 col-form-label text-right">Code</label>
-                            <label  class="col-6 col-form-label text-left">{{ $givenUserRole->code }}</label>
+                            <label  class="col-3 col-form-label text-right">Code<span class="text-danger">*</span></label>
+                            <div class="col-6">
+                                <input type="text" class="form-control" id="permission_code" name="permission_code" value="{{ old('permission_code') }}" required placeholder="Enter User Permission Code"/>
+                                <span class="form-text text-muted">Please enter the unique Permission Code</span>
+                            </div>
                         </div>
 
                         <div class="form-group row">
                             <label  class="col-3 col-form-label text-right">Name</label>
                             <div class="col-6">
-                                <input type="text" class="form-control" id="role_name" name="role_name" placeholder="Enter Role Display Name" value="{{ $givenUserRole->display_name }}"/>
-                                <span class="form-text text-muted">This will be displayed to show the Role.</span>
+                                <input type="text" class="form-control" id="permission_name" name="permission_name" value="{{ old('permission_name') }}" placeholder="Enter Permission Display Name"/>
+                                <span class="form-text text-muted">This will be displayed to show the Permission.</span>
                             </div>
                         </div>
 
                         <div class="form-group row">
                             <label  class="col-3 col-form-label text-right">Description</label>
                             <div class="col-6">
-                                <textarea class="form-control" id="role_desc" name="role_desc" rows="3">{{ $givenUserRole->description }}</textarea>
-                                <span class="form-text text-muted">A short description about the Role.</span>
+                                <textarea class="form-control" id="permission_desc" name="permission_desc" rows="3">{{ old('permission_desc') }}</textarea>
+                                <span class="form-text text-muted">A short description about the Permission.</span>
                             </div>
                         </div>
 
                         <div class="form-group row mb-1">
                             <label  class="col-3 col-form-label text-right">Active<span class="text-danger">*</span></label>
                             <div class="col-6">
-                                <select class="form-control" id="role_active" name="role_active" >
-                                    <option value="1" {{ ($givenUserRole->is_active == 1) ? "selected" : "" }}>Active</option>
-                                    <option value="0" {{ ($givenUserRole->is_active == 0) ? "selected" : "" }}>Inactive</option>
+                                <select class="form-control" id="permission_active" name="permission_active">
+                                    <option value="1">Active</option>
+                                    <option value="0">Inactive</option>
                                 </select>
                             </div>
                         </div>
@@ -76,10 +79,10 @@
 
                     <!--begin::Card Footer-->
                     <div class="card-footer text-right">
-                        <button type="submit" id="edit_user_role_submit_btn" class="btn btn-primary font-weight-bold mr-2">
-                            <i class="la la-save"></i>Save Role
+                        <button type="submit" id="new_user_permission_submit_btn" class="btn btn-primary font-weight-bold mr-2">
+                            <i class="la la-plus"></i>Add Permission
                         </button>
-                        <button type="button" id="edit_user_role_cancel_btn" class="btn btn-light-primary font-weight-bold">Cancel</button>
+                        <button type="button" id="new_user_permission_cancel_btn" class="btn btn-light-primary font-weight-bold">Cancel</button>
                     </div>
                     <!--end::Card Footer-->
 
@@ -96,10 +99,10 @@
 
 @section('custom-js-section')
 
-    <script src="{{ asset('js/userrole.js') }}"></script>
+    <script src="{{ asset('js/permission.js') }}"></script>
     <script>
         jQuery(document).ready(function() {
-            UserRolesCustomJsBlocks.editPage('{{ url('/') }}');
+            UserPermissionsCustomJsBlocks.newPage('{{ url('/') }}');
         });
     </script>
 

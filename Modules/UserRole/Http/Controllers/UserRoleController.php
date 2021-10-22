@@ -54,15 +54,16 @@ class UserRoleController extends Controller
      * Store a newly created resource in storage.
      * @param Request $request
      * @return Renderable
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request)
     {
 
         $validator = Validator::make($request->all() , [
-            'role_code'   => 'required|alpha_dash',
-            'role_name' => 'nullable|string|min:6',
-            'role_desc' => 'nullable|string|min:6',
-            'role_active' => 'required|boolean',
+            'role_code'   => ['required', 'alpha_dash'],
+            'role_name' => ['nullable', 'string', 'min:6'],
+            'role_desc' => ['nullable', 'string', 'min:6'],
+            'role_active' => ['required', 'boolean'],
         ], [
             'role_code.required' => 'The Role Code should be provided.',
             'role_code.alpha_dash' => 'The Role Code should contain only alphabets, numbers, dashes(-) or underscores(_).',
@@ -80,10 +81,11 @@ class UserRoleController extends Controller
                 ->withInput($request->only('role_code', 'role_name', 'role_desc', 'role_active'));
         }
 
-        $roleCode = $request->input('role_code');
-        $roleName = $request->input('role_name');
-        $roleDesc = $request->input('role_desc');
-        $roleActive = $request->input('role_active');
+        $postData = $validator->validated();
+        $roleCode = $postData['role_code'];
+        $roleName = $postData['role_name'];
+        $roleDesc = $postData['role_desc'];
+        $roleActive = $postData['role_active'];
 
         $cleanRoleCode = strtolower(str_replace(' ', '_', trim($roleCode)));
 
@@ -178,6 +180,7 @@ class UserRoleController extends Controller
      * @param Request $request
      * @param int $roleId
      * @return Renderable
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function update(Request $request, $roleId)
     {
@@ -194,9 +197,9 @@ class UserRoleController extends Controller
         }
 
         $validator = Validator::make($request->all() , [
-            'role_name' => 'nullable|string|min:6',
-            'role_desc' => 'nullable|string|min:6',
-            'role_active' => 'required|boolean',
+            'role_name' => ['nullable', 'string', 'min:6'],
+            'role_desc' => ['nullable', 'string', 'min:6'],
+            'role_active' => ['required', 'boolean'],
         ], [
             'role_name.string' => 'The Role Name should be a string value.',
             'role_name.min' => 'The Role Name should be minimum :min characters.',
@@ -212,9 +215,10 @@ class UserRoleController extends Controller
                 ->withInput($request->only('role_name', 'role_desc', 'role_active'));
         }
 
-        $roleName = $request->input('role_name');
-        $roleDesc = $request->input('role_desc');
-        $roleActive = $request->input('role_active');
+        $postData = $validator->validated();
+        $roleName = $postData['role_name'];
+        $roleDesc = $postData['role_desc'];
+        $roleActive = $postData['role_active'];
 
         if ($givenUserRole->isAdmin() && (($roleActive == 0) || ($roleActive === false))) {
             return back()

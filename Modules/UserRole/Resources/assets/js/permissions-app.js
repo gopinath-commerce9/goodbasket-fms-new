@@ -1,9 +1,9 @@
 "use strict";
-var UserRolesCustomJsBlocks = function() {
+var UserPermissionsCustomJsBlocks = function() {
 
     var initUserRoleTable = function() {
 
-        var table = $('#user_role_table');
+        var table = $('#user_permissions_table');
 
         table.DataTable({
             responsive: true,
@@ -17,25 +17,9 @@ var UserRolesCustomJsBlocks = function() {
 
     };
 
-    var initUserRoleUserTable = function() {
+    var initUserPermissionRoleTable = function() {
 
-        var table = $('#role_user_list_table');
-
-        table.DataTable({
-            responsive: true,
-            dom: `<'row'<'col-sm-12'tr>>
-			<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
-            lengthMenu: [5, 10, 25, 50],
-            pageLength: 10,
-            order: [[0, 'asc']],
-            columnDefs: [],
-        });
-
-    };
-
-    var initUserRolePermissionTable = function() {
-
-        var table = $('#role_permission_list_table');
+        var table = $('#permission_role_list_table');
 
         table.DataTable({
             responsive: true,
@@ -54,17 +38,16 @@ var UserRolesCustomJsBlocks = function() {
             initUserRoleTable();
         },
         viewPage: function() {
-            initUserRoleUserTable();
-            initUserRolePermissionTable();
+            initUserPermissionRoleTable();
         },
         newPage: function(hostUrl) {
-            jQuery('button#new_user_role_cancel_btn').on('click', function(e) {
-                window.location = hostUrl + '/userrole/roles';
+            jQuery('button#new_user_permission_cancel_btn').on('click', function(e) {
+                window.location = hostUrl + '/userrole/permissions';
             });
         },
         editPage: function(hostUrl) {
-            jQuery('button#edit_user_role_cancel_btn').on('click', function(e) {
-                window.location = hostUrl + '/userrole/roles';
+            jQuery('button#edit_user_permission_cancel_btn').on('click', function(e) {
+                window.location = hostUrl + '/userrole/permissions';
             });
         }
     };

@@ -18,7 +18,7 @@
                     <div class="card-title">
                         <h3 class="card-label">
                             <?= $pageSubTitle; ?>
-                            <span class="d-block text-muted pt-2 font-size-sm">Total <?= $userRolesTotal; ?> Records</span>
+                            <span class="d-block text-muted pt-2 font-size-sm">Total <?= $userPermissionsTotal; ?> Records</span>
                         </h3>
                     </div>
                     <!--end::Card Title-->
@@ -26,12 +26,12 @@
                     <!--begin::Card Toolbar-->
                     <div class="card-toolbar">
 
-                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.create'))
-                            <!--begin::Button-->
-                            <a href="{{ url('/userrole/roles/new') }}" class="btn btn-primary font-weight-bolder">
-                                <i class="la la-plus"></i>New User Role
-                            </a>
-                            <!--end::Button-->
+                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-role-permissions.create'))
+                        <!--begin::Button-->
+                        <a href="{{ url('/userrole/permissions/new') }}" class="btn btn-primary font-weight-bolder">
+                            <i class="la la-plus"></i>New Permission
+                        </a>
+                        <!--end::Button-->
                         @endif
 
                     </div>
@@ -44,11 +44,11 @@
                 <div class="card-body">
 
                     <div  class="table-responsive">
-                        <table class="table table-bordered table-checkable" id="user_role_table">
+                        <table class="table table-bordered table-checkable" id="user_permissions_table">
 
                             <thead>
                                 <tr>
-                                    <th>Role ID </th>
+                                    <th> ID </th>
                                     <th>Code</th>
                                     <th>Name</th>
                                     <th>Description</th>
@@ -61,41 +61,41 @@
 
                             <tbody>
 
-                            @foreach($userRoleList as $userRoleEl)
+                            @foreach($userPermissionList as $userPermissionEl)
 
                                 <tr>
-                                    <td>{{ $userRoleEl->id }}</td>
-                                    <td>{{ $userRoleEl->code }}</td>
-                                    <td>{{ $userRoleEl->display_name }}</td>
-                                    <td>{{ $userRoleEl->description }}</td>
+                                    <td>{{ $userPermissionEl->id }}</td>
+                                    <td>{{ $userPermissionEl->code }}</td>
+                                    <td>{{ $userPermissionEl->display_name }}</td>
+                                    <td>{{ $userPermissionEl->description }}</td>
                                     <td>
-                                        @if($userRoleEl->is_active == 0)
+                                        @if($userPermissionEl->is_active == 0)
                                             <span class="label label-lg font-weight-bold label-light-danger label-inline">Inactive</span>
-                                        @elseif($userRoleEl->is_active == 1)
+                                        @elseif($userPermissionEl->is_active == 1)
                                             <span class="label label-lg font-weight-bold label-light-success label-inline">Active</span>
                                         @else
-                                            {{ $userRoleEl->is_active }}
+                                            {{ $userPermissionEl->is_active }}
                                         @endif
                                     </td>
-                                    <td>{{ date('Y-m-d H:i:s', strtotime($userRoleEl->created_at)) }}</td>
-                                    <td>{{ date('Y-m-d H:i:s', strtotime($userRoleEl->updated_at)) }}</td>
+                                    <td>{{ date('Y-m-d H:i:s', strtotime($userPermissionEl->created_at)) }}</td>
+                                    <td>{{ date('Y-m-d H:i:s', strtotime($userPermissionEl->updated_at)) }}</td>
                                     <td nowrap="nowrap">
 
-                                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.view'))
-                                            <a href="{{ url('/userrole/roles/view/' . $userRoleEl->id) }}" class="btn btn-sm btn-clean btn-icon mr-2" title="View">
+                                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-role-permissions.view'))
+                                            <a href="{{ url('/userrole/permissions/view/' . $userPermissionEl->id) }}" class="btn btn-sm btn-clean btn-icon mr-2" title="View">
                                                 <i class="flaticon2-list-2 text-info"></i>
                                             </a>
                                         @endif
 
-                                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.update'))
-                                            <a href="{{ url('/userrole/roles/edit/' . $userRoleEl->id) }}" class="btn btn-sm btn-clean btn-icon mr-2" title="Edit">
+                                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-role-permissions.update'))
+                                            <a href="{{ url('/userrole/permissions/edit/' . $userPermissionEl->id) }}" class="btn btn-sm btn-clean btn-icon mr-2" title="Edit">
                                                 <i class="flaticon2-pen text-warning"></i>
                                             </a>
                                         @endif
 
-                                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.delete'))
-                                            @if(!$userRoleEl->isAdmin())
-                                                <a href="{{ url('/userrole/roles/delete/' . $userRoleEl->id) }}" class="btn btn-sm btn-clean btn-icon" title="Delete">
+                                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-role-permissions.delete'))
+                                            @if(!$userPermissionEl->isDefaultPermission())
+                                                <a href="{{ url('/userrole/permissions/delete/' . $userPermissionEl->id) }}" class="btn btn-sm btn-clean btn-icon" title="Delete">
                                                     <i class="flaticon-delete-1 text-danger"></i>
                                                 </a>
                                             @endif
@@ -124,10 +124,10 @@
 
 @section('custom-js-section')
 
-    <script src="{{ asset('js/userrole.js') }}"></script>
+    <script src="{{ asset('js/permission.js') }}"></script>
     <script>
         jQuery(document).ready(function() {
-            UserRolesCustomJsBlocks.listPage();
+            UserPermissionsCustomJsBlocks.listPage();
         });
     </script>
 

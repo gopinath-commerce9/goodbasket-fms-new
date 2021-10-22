@@ -12,6 +12,23 @@ class Permission extends Model
     const PERMITTED_YES = 1;
     const PERMITTED_NO = 0;
 
+    const DEFAULT_PERMISSIONS = [
+        'users.view',
+        'users.create',
+        'users.update',
+        'users.delete',
+        'user-roles.view',
+        'user-roles.create',
+        'user-roles.update',
+        'user-roles.assign',
+        'user-roles.delete',
+        'user-role-permissions.view',
+        'user-role-permissions.create',
+        'user-role-permissions.update',
+        'user-role-permissions.grant',
+        'user-role-permissions.delete',
+    ];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -52,6 +69,16 @@ class Permission extends Model
             'permission_id',
             'role_id'
         )->withPivot('permitted', 'is_active')->withTimestamps();
+    }
+
+    /**
+     * Checks whether the Permission is Default.
+     * @return bool
+     */
+    public function isDefaultPermission() {
+        return (in_array($this->code, self::DEFAULT_PERMISSIONS))
+            ? true
+            : false;
     }
 
 }

@@ -9,6 +9,7 @@ let moduleAssetDir = __dirname + '/Resources/assets';
 mix.setPublicPath(publicMainAssets).mergeManifest();
 
 mix.copy(moduleAssetDir + '/js/app.js', publicMainAssets + '/js/userrole.js');
+mix.copy(moduleAssetDir + '/js/permissions-app.js', publicMainAssets + '/js/permission.js');
 mix.sass(moduleAssetDir + '/sass/app.scss',  'css/userrole.css');
 
 /*mix.js(__dirname + '/Resources/assets/js/app.js', 'js/userrole.js')

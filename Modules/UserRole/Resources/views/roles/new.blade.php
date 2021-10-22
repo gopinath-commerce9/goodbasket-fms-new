@@ -43,7 +43,7 @@
                         <div class="form-group row mt-4">
                             <label  class="col-3 col-form-label text-right">Code<span class="text-danger">*</span></label>
                             <div class="col-6">
-                                <input type="text" class="form-control" id="role_code" name="role_code" required placeholder="Enter User Role Code"/>
+                                <input type="text" class="form-control" id="role_code" name="role_code" value="{{ old('role_code') }}" required placeholder="Enter User Role Code"/>
                                 <span class="form-text text-muted">Please enter the unique Role Code</span>
                             </div>
                         </div>
@@ -51,7 +51,7 @@
                         <div class="form-group row">
                             <label  class="col-3 col-form-label text-right">Name</label>
                             <div class="col-6">
-                                <input type="text" class="form-control" id="role_name" name="role_name" placeholder="Enter Role Display Name"/>
+                                <input type="text" class="form-control" id="role_name" name="role_name" value="{{ old('role_name') }}" placeholder="Enter Role Display Name"/>
                                 <span class="form-text text-muted">This will be displayed to show the Role.</span>
                             </div>
                         </div>
@@ -59,7 +59,7 @@
                         <div class="form-group row">
                             <label  class="col-3 col-form-label text-right">Description</label>
                             <div class="col-6">
-                                <textarea class="form-control" id="role_desc" name="role_desc" rows="3"></textarea>
+                                <textarea class="form-control" id="role_desc" name="role_desc" rows="3">{{ old('role_desc') }}</textarea>
                                 <span class="form-text text-muted">A short description about the Role.</span>
                             </div>
                         </div>
@@ -99,14 +99,11 @@
 
 @section('custom-js-section')
 
+    <script src="{{ asset('js/userrole.js') }}"></script>
     <script>
-
         jQuery(document).ready(function() {
-            jQuery('button#new_user_role_cancel_btn').on('click', function(e) {
-                window.location = '{{ url('/userrole/roles') }}';
-            });
+            UserRolesCustomJsBlocks.newPage('{{ url('/') }}');
         });
-
     </script>
 
 @endsection
