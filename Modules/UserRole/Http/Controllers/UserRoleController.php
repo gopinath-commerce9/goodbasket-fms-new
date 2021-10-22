@@ -5,6 +5,7 @@ namespace Modules\UserRole\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Input;
+use Modules\UserRole\Entities\Permission;
 use Modules\UserRole\Entities\PermissionMap;
 use Modules\UserRole\Entities\UserRoleMap;
 use Redirect;
@@ -164,13 +165,16 @@ class UserRoleController extends Controller
                 ->with('error', 'The User Role does not exist!');
         }
 
+        $givenPermissionList = Permission::all();
+
         $pageTitle = 'Fulfillment Center';
         $pageSubTitle = 'Edit User Role #' . $givenUserRole->code;
 
         return view('userrole::roles.edit', compact(
             'pageTitle',
             'pageSubTitle',
-            'givenUserRole'
+            'givenUserRole',
+            'givenPermissionList'
         ));
 
     }
@@ -200,6 +204,9 @@ class UserRoleController extends Controller
             'role_name' => ['nullable', 'string', 'min:6'],
             'role_desc' => ['nullable', 'string', 'min:6'],
             'role_active' => ['required', 'boolean'],
+            'permission_map' => ['nullable', 'array'],
+            'permission_map.*.active' => ['boolean'],
+            'permission_map.*.permitted' => ['boolean'],
         ], [
             'role_name.string' => 'The Role Name should be a string value.',
             'role_name.min' => 'The Role Name should be minimum :min characters.',
@@ -219,6 +226,12 @@ class UserRoleController extends Controller
         $roleName = $postData['role_name'];
         $roleDesc = $postData['role_desc'];
         $roleActive = $postData['role_active'];
+        $permissionMapData = (
+            array_key_exists('permission_map', $postData)
+            && !is_null($postData['permission_map'])
+            && is_array($postData['permission_map'])
+            && (count($postData['permission_map']) > 0)
+        ) ? $postData['permission_map'] : [];
 
         if ($givenUserRole->isAdmin() && (($roleActive == 0) || ($roleActive === false))) {
             return back()
@@ -237,8 +250,30 @@ class UserRoleController extends Controller
             UserRoleMap::where('role_id', $givenUserRole->id)
                 ->update(['is_active' => $roleActive]);
 
-            PermissionMap::where('role_id', $givenUserRole->id)
-                ->update(['is_active' => $roleActive]);
+            foreach ($permissionMapData as $postPermissionKey => $postPermissionMap) {
+                if (!is_null($postPermissionKey) && is_numeric($postPermissionKey) && ((int)$postPermissionKey > 0)) {
+                    $givenUserPermission = Permission::find($postPermissionKey);
+                    $possibleStatusValues = [0, 1];
+                    if($givenUserPermission) {
+                        if (
+                            array_key_exists('permitted', $postPermissionMap)
+                            && array_key_exists('active', $postPermissionMap)
+                            && in_array((int) trim($postPermissionMap['permitted']), $possibleStatusValues)
+                            && in_array((int) trim($postPermissionMap['active']), $possibleStatusValues)
+                        ) {
+                            if (!$givenUserRole->isAdmin() || !$givenUserPermission->isDefaultPermission()) {
+                                $newPermissionMap = PermissionMap::updateOrCreate([
+                                    'role_id' => $givenUserRole->id,
+                                    'permission_id' => $givenUserPermission->id
+                                ], [
+                                    'permitted' => (((int) $postPermissionMap['permitted'] == 1) ? 1 : 0),
+                                    'is_active' => (((int) $postPermissionMap['active'] === 1) ? 1 : 0)
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
 
             return redirect()->route('roles.index')->with('success', 'The User Role is updated successfully!');
 

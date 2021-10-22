@@ -71,6 +71,108 @@
                             </div>
                         </div>
 
+                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-role-permissions.grant'))
+                        <div class="form-group row mb-1 mt-5">
+                            <label  class="col-3 col-form-label text-right">Permissions</label>
+                            <?php
+                            $mappedUserPermissions = null;
+                            $mappedUserPermissionsArray = null;
+                            if ($givenUserRole->mappedPermissions && (count($givenUserRole->mappedPermissions) > 0)) {
+                                $mappedUserPermissions = $givenUserRole->mappedPermissions;
+                                $mappedUserPermissionsArray = $mappedUserPermissions->toArray();
+                            }
+                            ?>
+                            <div class="col-6">
+
+                                <div  class="table-responsive">
+                                    <table class="table table-bordered table-checkable text-center" id="role_permission_map_table">
+
+                                        <thead>
+                                            <tr>
+                                                <th>Id</th>
+                                                <th>Code</th>
+                                                <th>Name</th>
+                                                <th>Active</th>
+                                                <th>Permission Active</th>
+                                                <th>Permitted</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                        @foreach($givenPermissionList as $userPermissionEl)
+
+                                            <?php
+                                            $filteredPermissions = array_filter($mappedUserPermissionsArray, function($value) use ($userPermissionEl) {
+                                                return $value['id'] === $userPermissionEl->id;
+                                            });
+                                            $filteredUserPermission = null;
+                                            if (count($filteredPermissions) > 0) {
+                                                $filteredUserPermission = array_values($filteredPermissions)[0];
+                                            }
+                                            ?>
+
+                                            <tr>
+                                                <td>{{ $userPermissionEl->id }}</td>
+                                                <td>{{ $userPermissionEl->code }}</td>
+                                                <td>{{ $userPermissionEl->display_name }}</td>
+                                                <td>
+                                                    @if($userPermissionEl->is_active == 0)
+                                                        <span class="label label-lg font-weight-bold label-light-danger label-inline">Inactive</span>
+                                                    @elseif($userPermissionEl->is_active == 1)
+                                                        <span class="label label-lg font-weight-bold label-light-success label-inline">Active</span>
+                                                    @else
+                                                        {{ $userPermissionEl->is_active }}
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($givenUserRole->isAdmin() && $userPermissionEl->isDefaultPermission())
+                                                        @if(!$filteredUserPermission || ($filteredUserPermission && ($filteredUserPermission['pivot']['is_active'] == 0)))
+                                                            <span class="label label-lg font-weight-bold label-light-danger label-inline">Inactive</span>
+                                                        @elseif($filteredUserPermission && ($filteredUserPermission['pivot']['is_active'] == 1))
+                                                            <span class="label label-lg font-weight-bold label-light-success label-inline">Active</span>
+                                                        @endif
+                                                    @else
+                                                        <select class="form-control"
+                                                                id="permission_map_active_{{ $givenUserRole->id }}_{{ $userPermissionEl->id }}"
+                                                                name="permission_map[{{ $userPermissionEl->id }}][active]" >
+                                                            <option value="0" {{ (!$filteredUserPermission || ($filteredUserPermission && ($filteredUserPermission['pivot']['is_active'] == 0))) ? "selected" : "" }}>
+                                                                Inactive
+                                                            </option>
+                                                            <option value="1" {{ ($filteredUserPermission && ($filteredUserPermission['pivot']['is_active'] == 1)) ? "selected" : "" }}>Active</option>
+                                                        </select>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($givenUserRole->isAdmin() && $userPermissionEl->isDefaultPermission())
+                                                        @if(!$filteredUserPermission || ($filteredUserPermission && ($filteredUserPermission['pivot']['permitted'] == 0)))
+                                                            <span class="label label-lg font-weight-bold label-light-danger label-inline">Not Permitted</span>
+                                                        @elseif($filteredUserPermission && ($filteredUserPermission['pivot']['permitted'] == 1))
+                                                            <span class="label label-lg font-weight-bold label-light-success label-inline">Permitted</span>
+                                                        @endif
+                                                    @else
+                                                        <select class="form-control"
+                                                                id="permission_map_permitted_{{ $givenUserRole->id }}_{{ $userPermissionEl->id }}"
+                                                                name="permission_map[{{ $userPermissionEl->id }}][permitted]" >
+                                                            <option value="0" {{ (!$filteredUserPermission || ($filteredUserPermission && ($filteredUserPermission['pivot']['permitted'] == 0))) ? "selected" : "" }}>
+                                                                Not Permitted
+                                                            </option>
+                                                            <option value="1" {{ ($filteredUserPermission && ($filteredUserPermission['pivot']['permitted'] == 1)) ? "selected" : "" }}>Permitted</option>
+                                                        </select>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+
+                                        </tbody>
+
+                                    </table>
+                                </div>
+
+                            </div>
+                        </div>
+                        @endif
+
                     </div>
                     <!--end::Card Body-->
 

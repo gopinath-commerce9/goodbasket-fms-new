@@ -49,6 +49,39 @@ var UserRolesCustomJsBlocks = function() {
 
     };
 
+    var initUserRolePermissionMapTable = function() {
+
+        var table = $('#role_permission_map_table');
+
+        table.DataTable({
+            responsive: true,
+            dom: `<'row'<'col-sm-12'tr>>
+			<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 5,
+            order: [[0, 'asc']],
+            columnDefs: [],
+        });
+
+        jQuery('#user_role_edit_form').on('submit', function(e) {
+            var form = this;
+            // Iterate over all checkboxes in the table
+            table.$('select').each(function(){
+                // If checkbox doesn't exist in DOM
+                if(!$.contains(document, this)){
+                    // If checkbox is checked
+                    $(form).append(
+                        $('<input>')
+                            .attr('type', 'hidden')
+                            .attr('name', this.name)
+                            .val(this.value)
+                    );
+                }
+            });
+        });
+
+    };
+
     return {
         listPage: function() {
             initUserRoleTable();
@@ -63,6 +96,7 @@ var UserRolesCustomJsBlocks = function() {
             });
         },
         editPage: function(hostUrl) {
+            initUserRolePermissionMapTable();
             jQuery('button#edit_user_role_cancel_btn').on('click', function(e) {
                 window.location = hostUrl + '/userrole/roles';
             });

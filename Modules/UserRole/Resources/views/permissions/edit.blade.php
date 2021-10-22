@@ -89,6 +89,7 @@
 
                                         <thead>
                                             <tr>
+                                                <th>Id</th>
                                                 <th>Code</th>
                                                 <th>Name</th>
                                                 <th>Active</th>
@@ -112,6 +113,7 @@
                                                 ?>
 
                                                 <tr>
+                                                    <td>{{ $userRoleEl->id }}</td>
                                                     <td>{{ $userRoleEl->code }}</td>
                                                     <td>{{ $userRoleEl->display_name }}</td>
                                                     <td>
@@ -162,8 +164,6 @@
 
                                     </table>
                                 </div>
-
-
 
                             </div>
                         </div>
