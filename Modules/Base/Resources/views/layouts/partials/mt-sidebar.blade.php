@@ -18,12 +18,7 @@
 
             <?php
                 $menuConfig = config('menuitems');
-                $menuUserRole = null;
                 $currentMenuUrl = '/' . Request::path();
-                if (session()->has('authUserData')) {
-                    $menuUser = session('authUserData');
-                    $menuUserRole = $menuUser['roleCode'];
-                }
                 if (isset($menuConfig) && !is_null($menuConfig) && is_array($menuConfig) && (count($menuConfig) > 0) && array_key_exists('items', $menuConfig)) {
                     $menuList = $menuConfig['items'];
                     if (is_array($menuList) && (count($menuList) > 0)) {
@@ -34,11 +29,11 @@
             @if(
                 ($menuItemData['active'])
                 && (
-                    is_null($menuItemData['roles'])
+                    is_null($menuItemData['permission'])
                     || (
-                        !is_null($menuUserRole)
-                        && is_array($menuItemData['roles'])
-                        && in_array($menuUserRole, $menuItemData['roles'])
+                        is_string($menuItemData['permission'])
+                        && (trim($menuItemData['permission']) != '')
+                        && \Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted(trim($menuItemData['permission']))
                     )
                 )
             )
@@ -62,11 +57,11 @@
                                 @if(
                                     ($menuChildData['active'])
                                     && (
-                                        is_null($menuChildData['roles'])
+                                        is_null($menuChildData['permission'])
                                         || (
-                                            !is_null($menuUserRole)
-                                            && is_array($menuChildData['roles'])
-                                            && in_array($menuUserRole, $menuChildData['roles'])
+                                            is_string($menuChildData['permission'])
+                                            && (trim($menuChildData['permission']) != '')
+                                            && \Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted(trim($menuChildData['permission']))
                                         )
                                     )
                                 )

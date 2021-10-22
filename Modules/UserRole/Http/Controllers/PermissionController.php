@@ -63,13 +63,13 @@ class PermissionController extends Controller
     {
 
         $validator = Validator::make($request->all() , [
-            'permission_code'   => ['required', 'alpha_dash'],
+            'permission_code'   => ['required', 'regex:/^[a-zA-Z0-9\-\_\.]+$/i'],
             'permission_name' => ['nullable', 'string', 'min:6'],
             'permission_desc' => ['nullable', 'string', 'min:6'],
             'permission_active' => ['required', 'boolean'],
         ], [
             'permission_code.required' => 'The Role Code should be provided.',
-            'permission_code.alpha_dash' => 'The Role Code should contain only alphabets, numbers, dashes(-) or underscores(_).',
+            'permission_code.regex' => 'The Role Code should contain only alphabets, numbers, dashes(-), dots(.) or underscores(_).',
             'permission_name.string' => 'The Role Name should be a string value.',
             'permission_name.min' => 'The Role Name should be minimum :min characters.',
             'permission_desc.string' => 'The Role Description should be a string value.',
