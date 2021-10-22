@@ -43,6 +43,11 @@ var UsersCustomJsBlocks = function() {
             jQuery('button#new_user_cancel_btn').on('click', function(e) {
                 window.location = hostUrl + '/userauth/users';
             });
+        },
+        editPage: function(hostUrl) {
+            jQuery('button#edit_user_cancel_btn').on('click', function(e) {
+                window.location = hostUrl + '/userauth/users';
+            });
         }
     };
 

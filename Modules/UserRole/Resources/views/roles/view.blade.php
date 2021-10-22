@@ -44,11 +44,13 @@
                             </li>
                             @endif
 
-                            {{--<li class="nav-item">
+                            @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-role-permissions.view'))
+                            <li class="nav-item">
                                 <a class="nav-link" data-toggle="tab" href="#user_role_view_permissions_tab">
                                     <span class="nav-text">Permissions</span>
                                 </a>
-                            </li>--}}
+                            </li>
+                            @endif
 
                         </ul>
                         <!--end::Card Tabs-->
@@ -140,19 +142,23 @@
                             <div class="form-group row my-2">
                                 @if($givenUserRole->mappedUsers && (count($givenUserRole->mappedUsers) > 0))
 
-                                    <div class="col col-12 text-right">
+                                    <div class="col col-12 text-center">
 
                                         <div  class="table-responsive">
                                             <table class="table table-bordered table-checkable" id="role_user_list_table">
 
                                                 <thead>
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>Name</th>
-                                                    <th>EMail</th>
-                                                    <th>Created At</th>
-                                                    <th>Updated At</th>
-                                                </tr>
+                                                    <tr>
+                                                        <th rowspan="2"> ID </th>
+                                                        <th rowspan="2">Name</th>
+                                                        <th rowspan="2">EMail</th>
+                                                        <th colspan="4">Role ({{ $givenUserRole->code }})</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Active</th>
+                                                        <th>Created At</th>
+                                                        <th>Updated At</th>
+                                                    </tr>
                                                 </thead>
 
                                                 <tbody>
@@ -162,8 +168,17 @@
                                                         <td>{{ $userEl->id }}</td>
                                                         <td>{{ $userEl->name }}</td>
                                                         <td>{{ $userEl->email }}</td>
-                                                        <td>{{ date('Y-m-d H:i:s', strtotime($userEl->created_at)) }}</td>
-                                                        <td>{{ date('Y-m-d H:i:s', strtotime($userEl->updated_at)) }}</td>
+                                                        <td>
+                                                            @if($userEl->pivot->is_active == 0)
+                                                                <span class="label label-lg font-weight-bold label-light-danger label-inline">Inactive</span>
+                                                            @elseif($userEl->pivot->is_active == 1)
+                                                                <span class="label label-lg font-weight-bold label-light-success label-inline">Active</span>
+                                                            @else
+                                                                {{ $userEl->pivot->is_active }}
+                                                            @endif
+                                                        </td>
+                                                        <td>{{ date('Y-m-d H:i:s', strtotime($userEl->pivot->created_at)) }}</td>
+                                                        <td>{{ date('Y-m-d H:i:s', strtotime($userEl->pivot->updated_at)) }}</td>
                                                     </tr>
                                                     @endforeach
 
@@ -179,14 +194,103 @@
                                 @endif
                             </div>
 
-
-
                         </div>
                         @endif
 
-                        {{--<div class="tab-pane fade" id="user_role_view_permissions_tab" role="tabpanel" aria-labelledby="user_role_view_permissions_tab">
-                            ...
-                        </div>--}}
+                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-role-permissions.view'))
+                        <div class="tab-pane fade" id="user_role_view_permissions_tab" role="tabpanel" aria-labelledby="user_role_view_permissions_tab">
+
+                            <div class="form-group row my-2">
+
+                                <div class="col col-12 text-center">
+                                    <span class="label label-xl label-dark font-weight-boldest label-inline mr-2">Permission List</span>
+                                </div>
+
+                            </div>
+
+                            <div class="form-group row my-2">
+                                @if($givenUserRole->mappedPermissions && (count($givenUserRole->mappedPermissions) > 0))
+
+                                    <div class="col col-12 text-center">
+
+                                        <div  class="table-responsive">
+                                            <table class="table table-bordered table-checkable" id="role_permission_list_table">
+
+                                                <thead>
+                                                    <tr>
+                                                        <th rowspan="2"> ID </th>
+                                                        <th rowspan="2">Code</th>
+                                                        <th rowspan="2">Name</th>
+                                                        <th rowspan="2">Description</th>
+                                                        <th rowspan="2">Active</th>
+                                                        <th colspan="4">Role ({{ $givenUserRole->code }})</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Permitted</th>
+                                                        <th>Active</th>
+                                                        <th>Created At</th>
+                                                        <th>Updated At</th>
+                                                    </tr>
+                                                </thead>
+
+                                                <tbody>
+
+                                                    @foreach($givenUserRole->mappedPermissions as $userPermissionEl)
+                                                    <tr>
+                                                        <td>{{ $userPermissionEl->id }}</td>
+                                                        <td>{{ $userPermissionEl->code }}</td>
+                                                        <td>
+                                                            <span class="label label-lg font-weight-bold label-light-primary label-inline">
+                                                                {{ $userPermissionEl->display_name }}
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ $userPermissionEl->description }}</td>
+                                                        <td>
+                                                            @if($userPermissionEl->is_active == 0)
+                                                                <span class="label label-lg font-weight-bold label-light-danger label-inline">Inactive</span>
+                                                            @elseif($userPermissionEl->is_active == 1)
+                                                                <span class="label label-lg font-weight-bold label-light-success label-inline">Active</span>
+                                                            @else
+                                                                {{ $userPermissionEl->is_active }}
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if($userPermissionEl->pivot->permitted == 0)
+                                                                <span class="label label-lg font-weight-bold label-light-danger label-inline">Not Permitted</span>
+                                                            @elseif($userPermissionEl->pivot->permitted == 1)
+                                                                <span class="label label-lg font-weight-bold label-light-success label-inline">Permitted</span>
+                                                            @else
+                                                                {{ $userPermissionEl->pivot->permitted }}
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if($userPermissionEl->pivot->is_active == 0)
+                                                                <span class="label label-lg font-weight-bold label-light-danger label-inline">Inactive</span>
+                                                            @elseif($userPermissionEl->pivot->is_active == 1)
+                                                                <span class="label label-lg font-weight-bold label-light-success label-inline">Active</span>
+                                                            @else
+                                                                {{ $userPermissionEl->pivot->is_active }}
+                                                            @endif
+                                                        </td>
+                                                        <td>{{ date('Y-m-d H:i:s', strtotime($userPermissionEl->pivot->created_at)) }}</td>
+                                                        <td>{{ date('Y-m-d H:i:s', strtotime($userPermissionEl->pivot->updated_at)) }}</td>
+                                                    </tr>
+                                                    @endforeach
+
+                                                </tbody>
+
+                                            </table>
+                                        </div>
+
+                                    </div>
+
+                                @else
+                                    <label class="col-12 col-form-label font-size-lg-h2 text-center">No Permissions yet!</label>
+                                @endif
+                            </div>
+
+                        </div>
+                        @endif
 
                     </div>
                     <!--end::Card Tab Content-->

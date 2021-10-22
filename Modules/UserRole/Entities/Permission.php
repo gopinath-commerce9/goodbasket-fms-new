@@ -20,10 +20,12 @@ class Permission extends Model
         'user-roles.view',
         'user-roles.create',
         'user-roles.update',
+        'user-roles.assign',
         'user-roles.delete',
         'user-role-permissions.view',
         'user-role-permissions.create',
         'user-role-permissions.update',
+        'user-role-permissions.grant',
         'user-role-permissions.delete',
     ];
 

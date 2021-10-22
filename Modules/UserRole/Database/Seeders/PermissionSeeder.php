@@ -108,7 +108,7 @@ class PermissionSeeder extends Seeder
             'users.delete' => [
                 'code' => 'users.delete',
                 'display_name' => 'User Delete',
-                'description' => 'Permission to create the User.',
+                'description' => 'Permission to delete the User.',
                 'is_active' => 1,
             ],
             'user-roles.view' => [
@@ -126,37 +126,49 @@ class PermissionSeeder extends Seeder
             'user-roles.update' => [
                 'code' => 'user-roles.update',
                 'display_name' => 'User Role Update',
-                'description' => 'Permission to update the User details.',
+                'description' => 'Permission to update the User Role details.',
+                'is_active' => 1,
+            ],
+            'user-roles.assign' => [
+                'code' => 'user-roles.assign',
+                'display_name' => 'User Role Assign',
+                'description' => 'Permission to assign the Role to the User.',
                 'is_active' => 1,
             ],
             'user-roles.delete' => [
                 'code' => 'user-roles.delete',
                 'display_name' => 'User Role Delete',
-                'description' => 'Permission to create the User.',
+                'description' => 'Permission to delete the User Role.',
                 'is_active' => 1,
             ],
             'user-role-permissions.view' => [
                 'code' => 'user-role-permissions.view',
                 'display_name' => 'User Role Permissions View',
-                'description' => 'Permission to view the User Role details.',
+                'description' => 'Permission to view the User Permission details.',
                 'is_active' => 1,
             ],
             'user-role-permissions.create' => [
                 'code' => 'user-role-permissions.create',
                 'display_name' => 'User Role Permissions Create',
-                'description' => 'Permission to create the User Role.',
+                'description' => 'Permission to create the User Permission.',
                 'is_active' => 1,
             ],
             'user-role-permissions.update' => [
                 'code' => 'user-role-permissions.update',
                 'display_name' => 'User Role Permissions Update',
-                'description' => 'Permission to update the User details.',
+                'description' => 'Permission to update the User Permission details.',
+                'is_active' => 1,
+            ],
+            'user-role-permissions.grant' => [
+                'code' => 'user-role-permissions.grant',
+                'display_name' => 'User Role Permissions Grant',
+                'description' => 'Permission to grant the permissions to the User Role.',
                 'is_active' => 1,
             ],
             'user-role-permissions.delete' => [
                 'code' => 'user-role-permissions.delete',
                 'display_name' => 'User Role Permissions Delete',
-                'description' => 'Permission to create the User.',
+                'description' => 'Permission to delete the User Permission.',
                 'is_active' => 1,
             ]
         ];

@@ -47,16 +47,16 @@
                         <table class="table table-bordered table-checkable" id="user_role_table">
 
                             <thead>
-                            <tr>
-                                <th>Role ID </th>
-                                <th>Code</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Active</th>
-                                <th>Created At</th>
-                                <th>Updated At</th>
-                                <th>Action</th>
-                            </tr>
+                                <tr>
+                                    <th>Role ID </th>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Active</th>
+                                    <th>Created At</th>
+                                    <th>Updated At</th>
+                                    <th>Action</th>
+                                </tr>
                             </thead>
 
                             <tbody>

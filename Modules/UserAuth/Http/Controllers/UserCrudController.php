@@ -219,16 +219,20 @@ class UserCrudController extends Controller
         $postData = $validator->validated();
 
         $givenUserRole = null;
-        if (!is_null($postData['user_role'])) {
-            $givenUserRole = UserRole::find($postData['user_role']);
-            if(!$givenUserRole) {
-                return back()
-                    ->with('error', 'The User Role does not exist!')
-                    ->withInput($request->only('user_name'));
+        $roleAssiged = false;
+        if (array_key_exists('user_role', $postData)) {
+            $roleAssiged = true;
+            if (!is_null($postData['user_role'])) {
+                $givenUserRole = UserRole::find($postData['user_role']);
+                if(!$givenUserRole) {
+                    return back()
+                        ->with('error', 'The User Role does not exist!')
+                        ->withInput($request->only('user_name'));
+                }
             }
         }
 
-        if ($givenUserData->isDefaultUser() && (is_null($givenUserRole) || ($givenUserRole->code != UserRole::ADMIN_ROLE))) {
+        if ($givenUserData->isDefaultUser() && $roleAssiged && (is_null($givenUserRole) || ($givenUserRole->code != UserRole::ADMIN_ROLE))) {
             return back()
                 ->with('error', "The Role of the default User '". $givenUserData->email . " 'cannot be changed!")
                 ->withInput($request->only('user_name'));
@@ -239,15 +243,18 @@ class UserCrudController extends Controller
             $givenUserData->name = trim($postData['user_name']);
             $givenUserData->saveQuietly();
 
-            if (is_null($givenUserRole)) {
-                UserRoleMap::where('user_id', $givenUserData->id)
-                    ->delete();
-            } else {
-                $newRoleMap = UserRoleMap::updateOrCreate(
-                    ['user_id' => $givenUserData->id],
-                    ['role_id' => $givenUserRole->id, 'is_active' => 1]
-                );
+            if ($roleAssiged) {
+                if (is_null($givenUserRole)) {
+                    UserRoleMap::where('user_id', $givenUserData->id)
+                        ->delete();
+                } else {
+                    $newRoleMap = UserRoleMap::updateOrCreate(
+                        ['user_id' => $givenUserData->id],
+                        ['role_id' => $givenUserRole->id, 'is_active' => 1]
+                    );
+                }
             }
+
             return redirect()->route('users.index')->with('success', 'The User is updated successfully!');
 
         } catch(Exception $e) {

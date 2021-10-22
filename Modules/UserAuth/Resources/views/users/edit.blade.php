@@ -53,26 +53,28 @@
                             </div>
                         </div>
 
-                        @if(!$givenUserData->isDefaultUser())
-                        <div class="form-group row mb-1">
-                            <label  class="col-3 col-form-label text-right">Role</label>
-                            <?php
-                                $mappedUserRole = null;
-                                if ($givenUserData->mappedRole && (count($givenUserData->mappedRole) > 0)) {
-                                    $mappedUserRole = $givenUserData->mappedRole[0];
-                                }
-                            ?>
-                            <div class="col-6">
-                                <select class="form-control" id="user_role" name="user_role" >
-                                    <option value="" {{ (is_null($mappedUserRole)) ? "selected" : "" }}>Not Assigned</option>
-                                    @foreach($userRoles as $userRoleEl)
-                                        <option value="{{ $userRoleEl->id }}" {{ (!is_null($mappedUserRole) && ($mappedUserRole->id == $userRoleEl->id)) ? "selected" : "" }}>
-                                            {{ $userRoleEl->display_name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.assign'))
+                            @if(!$givenUserData->isDefaultUser())
+                            <div class="form-group row mb-1">
+                                <label  class="col-3 col-form-label text-right">Role</label>
+                                <?php
+                                    $mappedUserRole = null;
+                                    if ($givenUserData->mappedRole && (count($givenUserData->mappedRole) > 0)) {
+                                        $mappedUserRole = $givenUserData->mappedRole[0];
+                                    }
+                                ?>
+                                <div class="col-6">
+                                    <select class="form-control" id="user_role" name="user_role" >
+                                        <option value="" {{ (is_null($mappedUserRole)) ? "selected" : "" }}>Not Assigned</option>
+                                        @foreach($userRoles as $userRoleEl)
+                                            <option value="{{ $userRoleEl->id }}" {{ (!is_null($mappedUserRole) && ($mappedUserRole->id == $userRoleEl->id)) ? "selected" : "" }}>
+                                                {{ $userRoleEl->display_name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
-                        </div>
+                            @endif
                         @endif
 
                     </div>
