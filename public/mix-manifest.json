@@ -7,5 +7,7 @@
     "/js/userrole.js": "/js/userrole.js",
     "/css/users.css": "/css/users.css",
     "/js/users.js": "/js/users.js",
-    "/js/permission.js": "/js/permission.js"
+    "/js/permission.js": "/js/permission.js",
+    "/css/dashboard.css": "/css/dashboard.css",
+    "/js/dashboard.js": "/js/dashboard.js"
 }

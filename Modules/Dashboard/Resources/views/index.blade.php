@@ -7,7 +7,39 @@
 
     <div class="card card-custom">
         <div class="row border-bottom mb-7">
-            <div class="col-md-12">
+
+            <div class="col-md-6">
+                <div class="card card-custom">
+                    <form name="searchorder" action="{{ url('/dashboard/fetch-channel-orders') }}" method="POST" id="fetch_api_orders_form">
+                        @csrf
+                        <div class="card-body">
+                            <div class="form-group mb-8">
+                                <div class="form-group row">
+                                    <div class="col-4">
+                                        <select class="form-control" id="api_channel" name="api_channel" >
+                                            @foreach($availableApiChannels as $apiChannel)
+                                                <option value="{{ $apiChannel['id'] }}">
+                                                    {{ $apiChannel['name'] }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-4">
+                                        <input type='text' class="form-control" name="api_channel_dates" id="api_channel_dates" readonly placeholder="Select Delivery Date Range" type="text"/>
+                                        <input  type="hidden" value="{{ date('Y-m-d') }}" id="api_channel_date_start" name="api_channel_date_start" />
+                                        <input  type="hidden" value="{{ date('Y-m-d') }}" id="api_channel_date_end" name="api_channel_date_end" />
+                                    </div>
+                                    <div class="col-4">
+                                        <button type="submit" class="btn btn-primary mr-2">Fetch Orders From Server</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-6">
                 <div class="card card-custom">
                     <form name="searchorder" action="{{ url('/dashboard/find-order') }}" method="POST">
                         <div class="card-body">
@@ -27,7 +59,9 @@
                     </form>
                 </div>
             </div>
+
         </div>
+
         <div class="card-body p-0 mb-7">
             <!--begin: Wizard-->
             <div class="wizard wizard-3" id="kt_wizard_v3" data-wizard-state="step-first" data-wizard-clickable="true">
@@ -208,5 +242,16 @@
         </div>
 
     </div>
+
+@endsection
+
+@section('custom-js-section')
+
+    <script src="{{ asset('js/dashboard.js') }}"></script>
+    <script>
+        jQuery(document).ready(function() {
+            DashboardCustomJsBlocks.indexPage('{{ url('/') }}');
+        });
+    </script>
 
 @endsection

@@ -5,5 +5,6 @@
     "Base": true,
     "UserAuth": true,
     "Dashboard": true,
-    "Sales": true
+    "Sales": true,
+    "Configuration": true
 }

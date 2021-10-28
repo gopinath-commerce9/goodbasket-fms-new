@@ -2,58 +2,120 @@
 
 return [
 
+    'defaults' => [
+        'apiEnv' => env('DEFAULT_API_ENV', 'production'),
+    ],
+
     'api' => [
 
-        'env' => 'staging',
-
         'development' => [
-            'url' => 'https://admuat.goodbasket.com/',
-            'version' => 1,
-            'role' => 'admin',
-            'admin' => [
-                'username' => 'ajaygb',
-                'password' => 'jayaraj321$A',
+
+            'defaults' => [
+                'channel' => 'gb-1',
+                'country_code' => 'AE'
             ],
-            'timeoutSeconds' => 600,
-            'retryLoop' => 5,
-            'retryLoopInterval' => 60,
+
+            'channels' => [
+                'gb-1' => [
+                    'id' => 'gb-1',
+                    'name' => 'Good Basket Magento UAT',
+                    'url' => 'https://admuat.goodbasket.com/',
+                    'version' => 1,
+                    'apiUri' => 'rest/V1/',
+                    'authUri' => 'integration/admin/token',
+                    'authRole' => 'admin',
+                    'authKey' => 'ajaygb',
+                    'authSecret' => 'jayaraj321$A',
+                    'timezone' => 'Asia/Dubai',
+                    'timeoutSeconds' => 600,
+                    'retryLoop' => 5,
+                    'retryLoopInterval' => 60,
+                ],
+            ],
+
         ],
+
         'testing' => [
-            'url' => 'https://admuat.goodbasket.com/',
-            'version' => 1,
-            'role' => 'admin',
-            'admin' => [
-                'username' => 'ajaygb',
-                'password' => 'jayaraj321$A',
+
+            'defaults' => [
+                'channel' => 'gb-1',
+                'country_code' => 'AE'
             ],
-            'timeoutSeconds' => 600,
-            'retryLoop' => 5,
-            'retryLoopInterval' => 60,
+
+            'channels' => [
+                'gb-1' => [
+                    'id' => 'gb-1',
+                    'name' => 'Good Basket Magento UAT',
+                    'url' => 'https://admuat.goodbasket.com/',
+                    'version' => 1,
+                    'apiUri' => 'rest/V1/',
+                    'authUri' => 'integration/admin/token',
+                    'authRole' => 'admin',
+                    'authKey' => 'ajaygb',
+                    'authSecret' => 'jayaraj321$A',
+                    'timezone' => 'Asia/Dubai',
+                    'timeoutSeconds' => 600,
+                    'retryLoop' => 5,
+                    'retryLoopInterval' => 60,
+                ],
+            ],
+
         ],
+
         'staging' => [
-            'url' => 'https://admuat.goodbasket.com/',
-            'version' => 1,
-            'role' => 'admin',
-            'admin' => [
-                'username' => 'nived',
-                'password' => 'Commerce@9',
+
+            'defaults' => [
+                'channel' => 'gb-1',
+                'country_code' => 'AE'
             ],
-            'timeoutSeconds' => 600,
-            'retryLoop' => 5,
-            'retryLoopInterval' => 60,
-        ],
-        'live' => [
-            'url' => 'https://api.goodbasket.com/',
-            'version' => 1,
-            'role' => 'admin',
-            'admin' => [
-                'username' => 'nived',
-                'password' => 'Commerce@9',
+
+            'channels' => [
+                'gb-1' => [
+                    'id' => 'gb-1',
+                    'name' => 'Good Basket Magento UAT',
+                    'url' => 'https://admuat.goodbasket.com/',
+                    'version' => 1,
+                    'apiUri' => 'rest/V1/',
+                    'authUri' => 'integration/admin/token',
+                    'authRole' => 'admin',
+                    'authKey' => 'nived',
+                    'authSecret' => 'Commerce@9',
+                    'timezone' => 'Asia/Dubai',
+                    'timeoutSeconds' => 600,
+                    'retryLoop' => 5,
+                    'retryLoopInterval' => 60,
+                ],
             ],
-            'timeoutSeconds' => 600,
-            'retryLoop' => 5,
-            'retryLoopInterval' => 60,
+
         ],
+
+        'production' => [
+
+            'defaults' => [
+                'channel' => 'gb-1',
+                'country_code' => 'AE'
+            ],
+
+            'channels' => [
+                'gb-1' => [
+                    'id' => 'gb-1',
+                    'name' => 'Good Basket Magento',
+                    'url' => 'https://api.goodbasket.com/',
+                    'version' => 1,
+                    'apiUri' => 'rest/V1/',
+                    'authUri' => 'integration/admin/token',
+                    'authRole' => 'admin',
+                    'authKey' => 'nived',
+                    'authSecret' => 'Commerce@9',
+                    'timezone' => 'Asia/Dubai',
+                    'timeoutSeconds' => 600,
+                    'retryLoop' => 5,
+                    'retryLoopInterval' => 60,
+                ],
+            ],
+
+        ],
+
     ],
 
     'order_statuses' => [
