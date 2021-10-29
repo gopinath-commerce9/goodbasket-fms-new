@@ -7,6 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class SaleOrder extends Model
 {
 
+    const AVAILABLE_ORDER_STATUSES = [
+        'pending',
+        'processing',
+        'being_prepared',
+        'ready_to_dispatch',
+        'out_for_delivery',
+        'delivered'
+    ];
+
     /**
      * The table associated with the model.
      *

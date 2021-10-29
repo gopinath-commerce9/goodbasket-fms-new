@@ -32,6 +32,13 @@ class SaleOrderChannelImport implements ShouldQueue, ShouldBeUniqueUntilProcessi
      */
     public $timeout = 900;
 
+    /**
+     * The number of seconds after which the job's unique lock will be released.
+     *
+     * @var int
+     */
+    public $uniqueFor = 300;
+
     private $restApiService = null;
 
     private $restApiChannel = '';
@@ -62,6 +69,7 @@ class SaleOrderChannelImport implements ShouldQueue, ShouldBeUniqueUntilProcessi
      */
     public function __construct($channel = '', $fromDateString = '', $toDateString = '', $processUser = 0)
     {
+        $this->onQueue('saleOrderImport');
         $this->restApiService = new RestApiService();
         $this->setApiChannel($channel);
         $this->restApiChannel = $this->restApiService->getCurrentApiChannel();
@@ -267,14 +275,17 @@ class SaleOrderChannelImport implements ShouldQueue, ShouldBeUniqueUntilProcessi
 
         try {
 
-            $customerObj = SaleCustomer::firstOrCreate([
+            $customerObj = SaleCustomer::updateOrCreate([
                 'env' => $currentApiEnv,
                 'channel' => $currentApiChannel,
-                'email_id' => $saleOrderEl['customer_email'],
                 'contact_number' => $saleOrderEl['billing_address']['telephone'],
+                'email_id' => $saleOrderEl['customer_email'],
             ], [
+                'customer_group_id' => $saleOrderEl['customer_group_id'],
+                'sale_customer_id' => ((array_key_exists('customer_id', $saleOrderEl)) ? $saleOrderEl['customer_id'] : null),
                 'first_name' => $saleOrderEl['customer_firstname'],
                 'last_name' => $saleOrderEl['customer_lastname'],
+                'gender' => ((array_key_exists('customer_gender', $saleOrderEl)) ? $saleOrderEl['customer_gender'] : null),
                 'is_active' => 1
             ]);
 
@@ -322,44 +333,41 @@ class SaleOrderChannelImport implements ShouldQueue, ShouldBeUniqueUntilProcessi
                     'channel' => $currentApiChannel,
                     'order_id' => $saleOrderEl['entity_id'],
                     'increment_id' => $saleOrderEl['increment_id'],
+                    'order_created_at' => $saleOrderEl['created_at'],
+                    'order_updated_at' => $saleOrderEl['updated_at'],
+                    'customer_id' => $customerObj->id,
+                    'is_guest' => $saleOrderEl['customer_is_guest'],
+                    'customer_firstname' => $saleOrderEl['customer_firstname'],
+                    'customer_lastname' => $saleOrderEl['customer_lastname'],
+                    'region_id' => $orderShippingAddress['region_id'],
+                    'region_code' => $orderShippingAddress['region_code'],
+                    'region' => $orderShippingAddress['region'],
+                    'city' => $orderShippingAddress['city'],
+                    'zone_id' => $saleOrderEl['extension_attributes']['zone_id'],
+                    'store' => $saleOrderEl['store_name'],
+                    'delivery_date' => $saleOrderEl['extension_attributes']['delivery_date'],
+                    'delivery_time_slot' => $saleOrderEl['extension_attributes']['delivery_time_slot'],
+                    'total_item_count' => $saleOrderEl['total_item_count'],
+                    'total_qty_ordered' => $saleOrderEl['total_qty_ordered'],
+                    'order_weight' => $saleOrderEl['weight'],
+                    'box_count' => (isset($saleOrderEl['extension_attributes']['box_count'])) ? $saleOrderEl['extension_attributes']['box_count'] : null,
+                    'not_require_pack' => $saleOrderEl['extension_attributes']['not_require_pack'],
+                    'order_currency' => $saleOrderEl['order_currency_code'],
+                    'order_subtotal' => $saleOrderEl['subtotal'],
+                    'order_tax' => $saleOrderEl['tax_amount'],
+                    'discount_amount' => $saleOrderEl['discount_amount'],
+                    'shipping_total' => $saleOrderEl['shipping_amount'],
+                    'shipping_method' => $saleOrderEl['shipping_description'],
+                    'order_total' => $saleOrderEl['grand_total'],
+                    'order_due' => $saleOrderEl['total_due'],
+                    'order_state' => $saleOrderEl['state'],
+                    'order_status' => $saleOrderEl['status'],
+                    'order_status_label' => (isset($saleOrderEl['extension_attributes']['order_status_label'])) ? $saleOrderEl['extension_attributes']['order_status_label'] : null,
+                    'to_be_synced' => 0,
+                    'is_synced' => 0,
+                    'is_active' => 1,
                 ]);
             }
-
-            $saleOrderObj->update([
-                'order_created_at' => $saleOrderEl['created_at'],
-                'order_updated_at' => $saleOrderEl['updated_at'],
-                'customer_id' => $customerObj->id,
-                'is_guest' => $saleOrderEl['customer_is_guest'],
-                'customer_firstname' => $saleOrderEl['customer_firstname'],
-                'customer_lastname' => $saleOrderEl['customer_lastname'],
-                'region_id' => $orderShippingAddress['region_id'],
-                'region_code' => $orderShippingAddress['region_code'],
-                'region' => $orderShippingAddress['region'],
-                'city' => $orderShippingAddress['city'],
-                'zone_id' => $saleOrderEl['extension_attributes']['zone_id'],
-                'store' => $saleOrderEl['store_name'],
-                'delivery_date' => $saleOrderEl['extension_attributes']['delivery_date'],
-                'delivery_time_slot' => $saleOrderEl['extension_attributes']['delivery_time_slot'],
-                'total_item_count' => $saleOrderEl['total_item_count'],
-                'total_qty_ordered' => $saleOrderEl['total_qty_ordered'],
-                'order_weight' => $saleOrderEl['weight'],
-                'box_count' => (isset($saleOrderEl['extension_attributes']['box_count'])) ? $saleOrderEl['extension_attributes']['box_count'] : null,
-                'not_require_pack' => $saleOrderEl['extension_attributes']['not_require_pack'],
-                'order_currency' => $saleOrderEl['order_currency_code'],
-                'order_subtotal' => $saleOrderEl['subtotal'],
-                'order_tax' => $saleOrderEl['tax_amount'],
-                'discount_amount' => $saleOrderEl['discount_amount'],
-                'shipping_total' => $saleOrderEl['shipping_amount'],
-                'shipping_method' => $saleOrderEl['shipping_description'],
-                'order_total' => $saleOrderEl['grand_total'],
-                'order_due' => $saleOrderEl['total_due'],
-                'order_state' => $saleOrderEl['state'],
-                'order_status' => $saleOrderEl['status'],
-                'order_status_label' => (isset($saleOrderEl['extension_attributes']['order_status_label'])) ? $saleOrderEl['extension_attributes']['order_status_label'] : null,
-                'to_be_synced' => 0,
-                'is_synced' => 0,
-                'is_active' => 1,
-            ]);
 
             return [
                 'status' => true,
@@ -389,26 +397,35 @@ class SaleOrderChannelImport implements ShouldQueue, ShouldBeUniqueUntilProcessi
 
         try {
 
-            $saleOrderItemObj = SaleOrderItem::updateOrCreate([
+            $itemExtAttr = $orderItemEl['extension_attributes'];
+
+            $saleOrderItemObj = SaleOrderItem::firstOrCreate([
                 'order_id' => $saleOrderObj->id,
                 'item_id' => $orderItemEl['item_id'],
                 'sale_order_id' => $saleOrderObj->order_id
             ], [
                 'item_created_at' => $orderItemEl['created_at'],
                 'item_updated_at' => $orderItemEl['updated_at'],
+                'product_id' => $orderItemEl['product_id'],
+                'product_type' => $orderItemEl['product_type'],
                 'item_sku' => $orderItemEl['sku'],
-                'item_barcode' => $orderItemEl['extension_attributes']['barcode'],
-                'item_name' => $orderItemEl['extension_attributes']['product_en_name'],
-                'item_info' => $orderItemEl['extension_attributes']['pack_weight_info'],
-                'item_image' => $orderItemEl['extension_attributes']['product_image'],
-                'actual_qty' => $orderItemEl['extension_attributes']['actual_qty'],
+                'item_barcode' => $itemExtAttr['barcode'],
+                'item_name' => $itemExtAttr['product_en_name'],
+                'item_info' => $itemExtAttr['pack_weight_info'],
+                'item_image' => $itemExtAttr['product_image'],
+                'actual_qty' => $itemExtAttr['actual_qty'],
                 'qty_ordered' => $orderItemEl['qty_ordered'],
                 'qty_shipped' => $orderItemEl['qty_shipped'],
                 'qty_invoiced' => $orderItemEl['qty_invoiced'],
                 'qty_canceled' => $orderItemEl['qty_canceled'],
                 'qty_returned' => $orderItemEl['qty_returned'],
                 'qty_refunded' => $orderItemEl['qty_refunded'],
-                'selling_unit' => $orderItemEl['extension_attributes']['selling_format'],
+                'selling_unit' => $itemExtAttr['selling_format'],
+                'selling_unit_label' => $itemExtAttr['selling_format_label'],
+                'billing_period' => $itemExtAttr['billing_period'],
+                'delivery_day' => $itemExtAttr['delivery_day'],
+                'scale_number' => ((array_key_exists('scale_number', $itemExtAttr)) ? $itemExtAttr['scale_number'] : null),
+                'country_label' => $itemExtAttr['country_label'],
                 'item_weight' => $orderItemEl['row_weight'],
                 'price' => $orderItemEl['price'],
                 'row_total' => $orderItemEl['row_total'],
@@ -417,8 +434,8 @@ class SaleOrderChannelImport implements ShouldQueue, ShouldBeUniqueUntilProcessi
                 'discount_amount' => $orderItemEl['discount_amount'],
                 'discount_percent' => $orderItemEl['discount_percent'],
                 'row_grand_total' => $orderItemEl['row_total_incl_tax'],
-                'vendor_id' => $orderItemEl['extension_attributes']['vendor_id'],
-                'vendor_availability' => $orderItemEl['extension_attributes']['vendor_availability'],
+                'vendor_id' => $itemExtAttr['vendor_id'],
+                'vendor_availability' => $itemExtAttr['vendor_availability'],
                 'is_active' => 1
             ]);
 
@@ -449,7 +466,7 @@ class SaleOrderChannelImport implements ShouldQueue, ShouldBeUniqueUntilProcessi
 
         try {
 
-            $billingAddressObj = SaleOrderAddress::updateOrCreate([
+            $billingAddressObj = SaleOrderAddress::firstOrCreate([
                 'order_id' => $saleOrderObj->id,
                 'address_id' => $saleOrderEl['billing_address']['entity_id'],
                 'sale_order_id' => $saleOrderEl['entity_id'],
@@ -500,7 +517,7 @@ class SaleOrderChannelImport implements ShouldQueue, ShouldBeUniqueUntilProcessi
 
             $orderShippingAddress = $saleOrderEl['extension_attributes']['shipping_assignments'][0]['shipping']['address'];
 
-            $shippingAddressObj = SaleOrderAddress::updateOrCreate([
+            $shippingAddressObj = SaleOrderAddress::firstOrCreate([
                 'order_id' => $saleOrderObj->id,
                 'address_id' => $orderShippingAddress['entity_id'],
                 'sale_order_id' => $saleOrderEl['entity_id'],
@@ -549,7 +566,7 @@ class SaleOrderChannelImport implements ShouldQueue, ShouldBeUniqueUntilProcessi
 
         try {
 
-            $paymentObj = SaleOrderPayment::updateOrCreate([
+            $paymentObj = SaleOrderPayment::firstOrCreate([
                 'order_id' => $saleOrderObj->id,
                 'payment_id' => $saleOrderEl['payment']['entity_id'],
                 'sale_order_id' => $saleOrderEl['entity_id'],
@@ -557,6 +574,10 @@ class SaleOrderChannelImport implements ShouldQueue, ShouldBeUniqueUntilProcessi
                 'method' => $saleOrderEl['payment']['method'],
                 'amount_payable' => $saleOrderEl['payment']['amount_ordered'],
                 'amount_paid' => ((array_key_exists('amount_paid', $saleOrderEl['payment'])) ? $saleOrderEl['payment']['amount_paid'] : null),
+                'cc_last4' => ((array_key_exists('cc_last4', $saleOrderEl['payment'])) ? $saleOrderEl['payment']['cc_last4'] : null),
+                'cc_start_month' => ((array_key_exists('cc_ss_start_month', $saleOrderEl['payment'])) ? $saleOrderEl['payment']['cc_ss_start_month'] : null),
+                'cc_start_year' => ((array_key_exists('cc_ss_start_year', $saleOrderEl['payment'])) ? $saleOrderEl['payment']['cc_ss_start_year'] : null),
+                'cc_exp_year' => ((array_key_exists('cc_exp_year', $saleOrderEl['payment'])) ? $saleOrderEl['payment']['cc_exp_year'] : null),
                 'shipping_amount' => $saleOrderEl['payment']['shipping_amount'],
                 'shipping_captured' => ((array_key_exists('shipping_captured', $saleOrderEl['payment'])) ? $saleOrderEl['payment']['shipping_captured'] : null),
                 'extra_info' => json_encode($saleOrderEl['extension_attributes']['payment_additional_info']),
@@ -630,20 +651,22 @@ class SaleOrderChannelImport implements ShouldQueue, ShouldBeUniqueUntilProcessi
     private function recordOrderStatusProcess(SaleOrder $saleOrderObj = null, $orderAlreadyCreated = true) {
 
         try {
-            $saleOrderProcessHistoryObj = (new SaleOrderProcessHistory())->create([
-                'order_id' => $saleOrderObj->id,
-                'action' => (($orderAlreadyCreated) ? 're-import' : 'import'),
-                'status' => 1,
-                'comments' => 'The Sale Order Id #' . $saleOrderObj->order_id . ' is ' . (($orderAlreadyCreated) ? 're-imported' : 'imported') . '.',
-                'extra_info' => null,
-                'done_by' => ($this->processUser) ? $this->processUser->id : null,
-                'done_at' => date('Y-m-d H:i:s'),
-            ]);
+
+            if (!$orderAlreadyCreated || ($orderAlreadyCreated && $this->processUser)) {
+                $saleOrderProcessHistoryObj = (new SaleOrderProcessHistory())->create([
+                    'order_id' => $saleOrderObj->id,
+                    'action' => (($orderAlreadyCreated) ? 're-import' : 'import'),
+                    'status' => 1,
+                    'comments' => 'The Sale Order Id #' . $saleOrderObj->order_id . ' is ' . (($orderAlreadyCreated) ? 're-imported' : 'imported') . '.',
+                    'extra_info' => null,
+                    'done_by' => ($this->processUser) ? $this->processUser->id : null,
+                    'done_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
 
             return [
                 'status' => true,
                 'message' => '',
-                'saleOrderProcessHistoryObj' => $saleOrderProcessHistoryObj
             ];
 
         } catch (\Exception $e) {

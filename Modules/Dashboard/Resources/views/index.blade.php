@@ -42,6 +42,7 @@
             <div class="col-md-6">
                 <div class="card card-custom">
                     <form name="searchorder" action="{{ url('/dashboard/find-order') }}" method="POST">
+                        @csrf
                         <div class="card-body">
                             <div class="form-group mb-8">
                                 <div class="form-group row">
@@ -148,7 +149,7 @@
                                         <?php echo $record['total_orders']?>
                                     </a>
                                 </td>
-                                <td><a href="{{ url('/dashboard/download-items-csv') }}?region=<?php echo urlencode($selectedEmirate);?>&date=<?php echo urlencode($record['delivery_date']);?>&interval=<?php echo urlencode($record['delivery_time_slot']);?>">Export</a> </td>
+                                <td><a href="{{ url('/dashboard/download-items-schedule-csv') }}?region=<?php echo urlencode($selectedEmirate);?>&date=<?php echo urlencode($record['delivery_date']);?>&interval=<?php echo urlencode($record['delivery_time_slot']);?>">Export</a> </td>
                             </tr>
                             <?php
                             }
@@ -222,7 +223,7 @@
                             ?>
                             <tr>
                                 <td>
-                                    <a href="{{ url('/dashboard/download-items-datewise-csv') }}?region=<?php echo urlencode($selectedEmirate);?>&date=<?php echo urlencode($date);?>"><?= $date;?></a>
+                                    <a href="{{ url('/dashboard/download-items-date-csv') }}?region=<?php echo urlencode($selectedEmirate);?>&date=<?php echo urlencode($date);?>"><?= $date;?></a>
                                 </td>
                                 <td>
                                     <a href="{{ url('/dashboard/delivery-details') }}?region=<?php echo urlencode($selectedEmirate);?>&interval=na&date=<?php echo urlencode($date);?>">

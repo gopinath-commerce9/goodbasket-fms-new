@@ -4,6 +4,9 @@ namespace Modules\Sales\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Factory;
+use Illuminate\Console\Scheduling\Schedule;
+use Modules\Sales\Jobs\SaleOrderChannelImport;
+use Modules\Base\Entities\RestApiService;
 
 class SalesServiceProvider extends ServiceProvider
 {
@@ -28,6 +31,7 @@ class SalesServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->moduleName, 'Database/Migrations'));
+        $this->registerScheduledTasks();
     }
 
     /**
@@ -109,4 +113,25 @@ class SalesServiceProvider extends ServiceProvider
         }
         return $paths;
     }
+
+    private function registerScheduledTasks()
+    {
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
+            $this->scheduleSaleChannelImportJob($schedule);
+        });
+    }
+
+    private function scheduleSaleChannelImportJob(Schedule $schedule) {
+        $schedule->command('queue:work --queue=saleOrderImport')
+            ->everyMinute()->runInBackground()->name('saleOrderImportQueueWorker');
+        /*$schedule->call(function() {
+            $availableApiChannels = (new RestApiService())->getAllAvailableApiChannels();
+            $startDate = date('Y-m-d', strtotime('-10 days'));;
+            $endDate = date('Y-m-d', strtotime('+10 days'));;
+            foreach ($availableApiChannels as $apiChannel) {
+                SaleOrderChannelImport::dispatch($apiChannel['id'], $startDate, $endDate);
+            }
+        })->everyFiveMinutes()->name('saleOrderImportQueueJob')->withoutOverlapping();*/
+    }
+
 }

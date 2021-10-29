@@ -22,10 +22,13 @@ class SaleCustomer extends Model
     protected $fillable = [
         'env',
         'channel',
+        'contact_number',
+        'email_id',
+        'customer_group_id',
+        'sale_customer_id',
         'first_name',
         'last_name',
-        'email_id',
-        'contact_number',
+        'gender',
         'is_active',
     ];
 

@@ -8,7 +8,8 @@
 
     <div class="row">
         <div class="col-md-12">
-            <form action="{{ url('/dashboard/export-orderwise-items') }}" method="post">
+            <form action="{{ url('/dashboard/export-orderwise-items') }}" method="post" id="delivery_details_actions_form">
+                @csrf
                 <!--begin::Card-->
                 <div class="card card-custom gutter-b">
 
@@ -43,9 +44,10 @@
                         <!--begin: Datatable-->
 
                         <div  class="table-responsive">
-                            <table class="table table-bordered table-checkable">
+                            <table class="table table-bordered table-checkable text-center">
                                 <tr>
                                     <th></th>
+                                    <th>Channel</th>
                                     <th>Order ID </th>
                                     <th>Customer Name</th>
                                     <th>Zone</th>
@@ -65,21 +67,29 @@
                                 foreach ($orderData as $item)
                                 {
 
-                                $orderId = $item['entity_id'];
+                                $orderId = $item['id'];
+                                $saleOrderId = $item['order_id'];
                                 $orderIds[] = $orderId;
+                                $apiChannelCode = $item['channel'];
+                                $apiChannel = '';
+                                foreach ($availableApiChannels as $apiChannelKey => $apiChannelEl) {
+                                    if ($apiChannelEl['id'] == $apiChannelCode) {
+                                        $apiChannel = $apiChannelEl['name'];
+                                    }
+                                }
                                 $orderIncrementId = $item['increment_id'];
-                                $isGuest = $item['customer_is_guest'];
+                                $isGuest = $item['is_guest'];
                                 if($isGuest){
                                     $customerName = "Guest";
                                 } else {
                                     $customerName = $item['customer_firstname'] . " " . $item['customer_lastname'];
                                 }
 
-                                $dateOfOrder = $serviceHelper->getFormattedTime($item['created_at'], 'F d, Y, h:i:s A');
+                                $dateOfOrder = $serviceHelper->getFormattedTime($item['order_created_at'], 'F d, Y, h:i:s A');
                                 $area = $item['city'];
                                 $zone = $item['zone_id'];
 
-                                $amount = number_format($item['grand_total'], 2) . " " . $item['order_currency_code'];
+                                $amount = number_format($item['order_total'], 2) . " " . $item['order_currency'];
                                 if(isset($item['delivery_date'])){
                                     $delivery_date = $item['delivery_date'];
                                     $delivery_date = date("m/d/Y", strtotime($delivery_date));
@@ -91,7 +101,7 @@
                                 } else {
                                     $delivery_time_slot = "";
                                 }
-                                $status = $item['status'];
+                                $status = $item['order_status'];
                                 if(array_key_exists($status, $orderStatuses)) {
                                     $status = $orderStatuses[$status];
                                 }
@@ -99,19 +109,24 @@
                                 $viewLink = url('/dashboard/order-view/' . $orderId);
                                 ?>
                                 <tr>
-                                    <td><input type="checkbox" name="order[]" value="<?= $orderId?>" /></td>
-                                    <td># <?php echo $orderIncrementId; ?></td>
-                                    <td><?php echo $customerName; ?></td>
-                                    <td><?php echo $zone; ?></td>
-                                    <td><?php echo $area; ?></td>
-                                    <td><?php echo $customerGroups[$item['customer_group_id']]; ?></td>
-                                    <td><?php echo $dateOfOrder; ?></td>
-                                    <td><?php echo $amount; ?></td>
-                                    <td><?php echo $delivery_date; ?></td>
-                                    <td><?php echo $delivery_time_slot; ?></td>
-                                    <td><?php echo $status; ?></td>
-                                    <td id="vendor_<?= $orderId;?>"></td>
-                                    <td><a href="<?php echo $viewLink;?>" target="_blank">View Order</a></td>
+                                    <td><input type="checkbox" name="order[]" value="{{ $orderId }}" /></td>
+                                    <td>{{ $apiChannel }}</td>
+                                    <td># {{ $orderIncrementId }}</td>
+                                    <td>{{ $customerName }}</td>
+                                    <td>{{ $zone }}</td>
+                                    <td>{{ $area }}</td>
+                                    <td>{{ $customerGroups[$item['customer_group_id']] }}</td>
+                                    <td>{{ $dateOfOrder }}</td>
+                                    <td>{{ $amount }}</td>
+                                    <td>{{ $delivery_date }}</td>
+                                    <td>{{ $delivery_time_slot }}</td>
+                                    <td>
+                                        <span class="label label-lg font-weight-bold label-light-primary label-inline">
+                                            {{ $status }}
+                                        </span>
+                                    </td>
+                                    <td id="vendor_{{ $orderId }}"></td>
+                                    <td><a href="{{ $viewLink }}" target="_blank">View Order</a></td>
                                 </tr>
 
                                 <?php

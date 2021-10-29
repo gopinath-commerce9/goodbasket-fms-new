@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Input;
 use Modules\Dashboard\Entities\DashboardServiceHelper;
+use Modules\Sales\Entities\SaleOrder;
 use Modules\Sales\Jobs\SaleOrderChannelImport;
 
 class DashboardController extends Controller
@@ -105,6 +106,7 @@ class DashboardController extends Controller
         $orderData = $serviceHelper->getOrdersByRegion($region, $interval, $date, $pageSize, $pageNo);
         $orderIds = [];
 
+        $availableApiChannels = $serviceHelper->getAllAvailableChannels();
 
         return view('dashboard::delivery-details', compact(
             'pageTitle',
@@ -114,6 +116,7 @@ class DashboardController extends Controller
             'date',
             'customerGroups',
             'orderData',
+            'availableApiChannels',
             'totalRows',
             'startPageLink',
             'endPageLink',
@@ -122,6 +125,66 @@ class DashboardController extends Controller
             'orderIds',
             'orderStatuses',
             'serviceHelper'
+        ));
+
+    }
+
+    public function viewOrder($orderId) {
+
+        if (is_null($orderId) || !is_numeric($orderId) || ((int)$orderId <= 0)) {
+            return back()
+                ->with('error', 'The Sale Order Id input is invalid!');
+        }
+
+        $saleOrderObj = SaleOrder::find($orderId);
+        if(!$saleOrderObj) {
+            return back()
+                ->with('error', 'The Sale Order does not exist!');
+        }
+
+        $pageTitle = 'Fulfillment Center';
+        $pageSubTitle = 'Sale Order #' . $saleOrderObj->increment_id;
+
+        $orderStatuses = config('goodbasket.order_statuses');
+        $serviceHelper = new DashboardServiceHelper();
+
+        $customerGroups = [];
+        $customerGroupData = $serviceHelper->getCustomerGroups();
+        if (array_key_exists('items', $customerGroupData)) {
+            foreach($customerGroupData['items'] as $group) {
+                $customerGroups[$group['id']] = $group['code'];
+            }
+        }
+
+        $vendorList = [];
+        if (session()->has('salesOrderVendorList')) {
+            $vendorList = session()->get('salesOrderVendorList');
+        } else {
+            $vendorResponse = $serviceHelper->getVendorsList();
+            foreach($vendorResponse as $vendor)
+            {
+                $vendorList[$vendor['vendor_id']] = $vendor['vendor_name'];
+            }
+            session()->put('salesOrderVendorList', $vendorList);
+        }
+
+        $saleOrderObj->saleCustomer;
+        $saleOrderObj->orderItems;
+        $saleOrderObj->billingAddress;
+        $saleOrderObj->shippingAddress;
+        $saleOrderObj->paymentData;
+        $saleOrderObj->statusHistory;
+        $saleOrderData = $saleOrderObj->toArray();
+
+        return view('dashboard::order-view', compact(
+            'pageTitle',
+            'pageSubTitle',
+            'saleOrderObj',
+            'saleOrderData',
+            'customerGroups',
+            'vendorList',
+            'serviceHelper',
+            'orderStatuses'
         ));
 
     }
@@ -175,6 +238,214 @@ class DashboardController extends Controller
         SaleOrderChannelImport::dispatch($apiChannel, $startDate, $endDate, $sessionUser['id']);
 
         return response()->json([ 'message' => 'The sale orders will be fetched in the background' ], 200);
+
+    }
+
+    public function searchOrderByIncrementId(Request $request) {
+
+        $incrementId = (
+            $request->has('order_number')
+            && (trim($request->input('order_number')) != '')
+        ) ? trim($request->input('order_number')) : '';
+
+        if ($incrementId == '') {
+            return back()
+                ->with('error', "Requested Order Number value is invalid!");
+        }
+
+        $serviceHelper = new DashboardServiceHelper();
+        $currentChannel = $serviceHelper->getApiChannel();
+        $currentEnv = $serviceHelper->getApiEnvironment();
+
+        $targetOrder = SaleOrder::firstWhere('increment_id', $incrementId)
+            ->where('env', $currentEnv)
+            ->where('channel', $currentChannel);
+        if ($targetOrder) {
+            return redirect('/dashboard/order-view/' . $targetOrder->order_id);
+        } else {
+            return back()
+                ->with('error', "Sale Order #" . $incrementId . " not found!");
+        }
+
+    }
+
+    public function downloadItemsDateCsv(Request $request) {
+
+        $region = (
+            $request->has('region')
+            && (trim($request->input('region')) != '')
+        ) ? urldecode(trim($request->input('region'))) : null;
+
+        $date = (
+            $request->has('date')
+            && (trim($request->input('date')) != '')
+        ) ? urldecode(trim($request->input('date'))) : null;
+
+        if (is_null($region) || is_null($date)) {
+            return back()
+                ->with('error', "Requested Parameters are Empty!!");
+        }
+
+        $serviceHelper = new DashboardServiceHelper();
+        $records = $serviceHelper->getSaleOrderItemsByDate($region, $date);
+
+        if (count($records) <= 0) {
+            return back()
+                ->with('error', "There is no record to export the CSV file.");
+        }
+
+        $fileName = $region . "_" . $date . ".csv";
+        $headers = array(
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        );
+
+        $headingColumns = ["SKU", "Name", "Country", "Qty", "Selling Format","Pack and Weight Info", "Scale Number", "Shelf Number"];
+
+        $callback = function() use($records, $headingColumns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, array_values($headingColumns));
+            if(!empty($records)) {
+                foreach($records as $row) {
+                    fputcsv($file, [
+                        $row['item_sku'],
+                        $row['item_name'],
+                        $row['country_label'],
+                        $row['total_qty'],
+                        $row['selling_unit'],
+                        $row['item_info'],
+                        $row['scale_number'],
+                        (array_key_exists('shelf_number', $row) ? $row['shelf_number'] : ''),
+                    ]);
+                }
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+
+    }
+
+    public function downloadItemsScheduleCsv(Request $request) {
+
+        $region = (
+            $request->has('region')
+            && (trim($request->input('region')) != '')
+        ) ? urldecode(trim($request->input('region'))) : null;
+
+        $date = (
+            $request->has('date')
+            && (trim($request->input('date')) != '')
+        ) ? urldecode(trim($request->input('date'))) : null;
+
+        $interval = (
+            $request->has('interval')
+            && (trim($request->input('interval')) != '')
+        ) ? urldecode(trim($request->input('interval'))) : null;
+
+        if (is_null($region) || is_null($date) || is_null($interval)) {
+            return back()
+                ->with('error', "Requested Parameters are Empty!!");
+        }
+
+        $serviceHelper = new DashboardServiceHelper();
+        $records = $serviceHelper->getSaleOrderItemsBySchedule($region, $date, $interval);
+
+        if (count($records) <= 0) {
+            return back()
+                ->with('error', "There is no record to export the CSV file.");
+        }
+
+        $fileName = $region . "_" . $date . "_" . $interval . ".csv";
+        $headers = array(
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        );
+
+        $headingColumns = ["SKU", "Name", "Country", "Qty", "Selling Format","Pack and Weight Info", "Scale Number", "Shelf Number"];
+
+        $callback = function() use($records, $headingColumns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, array_values($headingColumns));
+            if(!empty($records)) {
+                foreach($records as $row) {
+                    fputcsv($file, [
+                        $row['item_sku'],
+                        $row['item_name'],
+                        $row['country_label'],
+                        $row['qty_ordered'],
+                        $row['selling_unit'],
+                        $row['item_info'],
+                        $row['scale_number'],
+                        (array_key_exists('shelf_number', $row) ? $row['shelf_number'] : ''),
+                    ]);
+                }
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+
+    }
+
+    public function exportOrderWiseItems(Request $request) {
+
+        $orders = (
+            $request->has('order')
+            && is_array($request->input('order'))
+        ) ? $request->input('order') : null;
+
+        if (is_null($orders)) {
+            return back()
+                ->with('error', "Requested Parameters are Empty!!");
+        }
+
+        $serviceHelper = new DashboardServiceHelper();
+        $records = $serviceHelper->getSaleOrderItemsByOrderIds($orders);
+
+        if (count($records) <= 0) {
+            return back()
+                ->with('error', "There is no record to export the CSV file.");
+        }
+
+        $fileName = "orderwiseitems.csv";
+        $headers = array(
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        );
+
+        $headingColumns = ["SKU", "Name", "Country", "Qty", "Selling Format","Pack and Weight Info", "Scale Number", "Shelf Number"];
+
+        $callback = function() use($records, $headingColumns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, array_values($headingColumns));
+            if(!empty($records)) {
+                foreach($records as $row) {
+                    fputcsv($file, [
+                        $row['item_sku'],
+                        $row['item_name'],
+                        $row['country_label'],
+                        $row['total_qty'],
+                        $row['selling_unit'],
+                        $row['item_info'],
+                        $row['scale_number'],
+                        (array_key_exists('shelf_number', $row) ? $row['shelf_number'] : ''),
+                    ]);
+                }
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
 
     }
 

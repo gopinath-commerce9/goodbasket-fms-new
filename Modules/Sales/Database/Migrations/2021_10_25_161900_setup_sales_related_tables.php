@@ -18,10 +18,13 @@ class SetupSalesRelatedTables extends Migration
             $table->id();
             $table->string('env', 20)->nullable(false);
             $table->string('channel', 20)->nullable(false);
+            $table->string('contact_number', 30)->nullable(false);
+            $table->string('email_id', 255)->nullable();
+            $table->string('customer_group_id', 255)->nullable();
+            $table->string('sale_customer_id', 255)->nullable();
             $table->string('first_name', 255)->nullable();
             $table->string('last_name', 255)->nullable();
-            $table->string('email_id', 255)->nullable();
-            $table->string('contact_number', 30)->nullable();
+            $table->string('gender', 50)->nullable();
             $table->boolean('is_active')->default(1);
             $table->timestamps();
         });
@@ -75,6 +78,8 @@ class SetupSalesRelatedTables extends Migration
             $table->unsignedBigInteger('sale_order_id')->nullable(false);
             $table->dateTime('item_created_at')->nullable();
             $table->dateTime('item_updated_at')->nullable();
+            $table->unsignedBigInteger('product_id')->nullable(false);
+            $table->string('product_type', 50)->nullable(false);
             $table->string('item_sku', 100)->nullable(false);
             $table->string('item_barcode', 30)->nullable(false);
             $table->text('item_name')->nullable(false);
@@ -88,6 +93,11 @@ class SetupSalesRelatedTables extends Migration
             $table->unsignedDecimal('qty_returned', 7, 3)->nullable();
             $table->unsignedDecimal('qty_refunded', 7, 3)->nullable();
             $table->string('selling_unit', 30)->nullable();
+            $table->string('selling_unit_label', 60)->nullable();
+            $table->string('billing_period', 255)->nullable();
+            $table->string('delivery_day', 60)->nullable();
+            $table->string('scale_number', 60)->nullable();
+            $table->string('country_label', 60)->nullable();
             $table->decimal('item_weight', 10, 3)->nullable();
             $table->decimal('price', 10, 2)->nullable();
             $table->decimal('row_total', 10, 2)->nullable();
@@ -133,6 +143,10 @@ class SetupSalesRelatedTables extends Migration
             $table->string('method', 255)->nullable();
             $table->decimal('amount_payable', 10, 2)->nullable();
             $table->decimal('amount_paid', 10, 2)->nullable();
+            $table->string('cc_last4', 10)->nullable();
+            $table->string('cc_start_month', 10)->nullable();
+            $table->string('cc_start_year', 10)->nullable();
+            $table->string('cc_exp_year', 10)->nullable();
             $table->decimal('shipping_amount', 10, 2)->nullable();
             $table->decimal('shipping_captured', 10, 2)->nullable();
             $table->text('extra_info')->nullable();

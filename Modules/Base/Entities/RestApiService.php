@@ -94,12 +94,13 @@ class RestApiService
     /**
      * Get the Authentication Bearer Token for the API Calls.
      *
+     * @param bool $force
      * @return string|null
      */
-    private function getApiUserBearerToken() {
+    private function getApiUserBearerToken($force = false) {
 
         $sessionTokenKey = $this->getApiBearerTokenKey();
-        if(session()->has($sessionTokenKey)) {
+        if(session()->has($sessionTokenKey) && !$force) {
             $cleanToken = trim(session()->get($sessionTokenKey));
             if (!is_null($cleanToken) && ($cleanToken != '')) {
                 return $cleanToken;
@@ -133,10 +134,11 @@ class RestApiService
      * @param array $params
      * @param array $headers
      * @param bool $authenticate
+     * @param bool $forceAuthenticate
      *
      * @return array
      */
-    private function processRestApiCall($method = 'GET', $url = '', $params = [], $headers = [], $authenticate = true) {
+    private function processRestApiCall($method = 'GET', $url = '', $params = [], $headers = [], $authenticate = true, $forceAuthenticate = false) {
 
         $httpMethods = ['GET', 'POST', 'PUT', 'DELETE'];
         $cleanMethod = strtoupper(str_replace(' ', '_', trim($method)));
@@ -173,6 +175,8 @@ class RestApiService
             ];
         }
 
+        $apiResponse = null;
+
         try {
 
             $timeoutSettings = $this->getApiTimeoutConfigs();
@@ -184,7 +188,7 @@ class RestApiService
             }
 
             if ($authenticate) {
-                $authToken = $this->getApiUserBearerToken();
+                $authToken = $this->getApiUserBearerToken($forceAuthenticate);
                 if(!$authToken) {
                     return [
                         'status' => false,
@@ -194,8 +198,6 @@ class RestApiService
                 }
                 $pendingRequest->withToken($authToken);
             }
-
-            $apiResponse = null;
 
             switch ($cleanMethod) {
                 case 'GET':
@@ -210,6 +212,18 @@ class RestApiService
                 case 'DELETE':
                     $apiResponse = $pendingRequest->delete($url, $params);
                     break;
+            }
+
+            if (($apiResponse->status() === 401) && $authenticate) {
+                $authToken = $this->getApiUserBearerToken(true);
+                if (!$authToken) {
+                    return [
+                        'status' => false,
+                        'message' => 'The API could not authenticate!',
+                        'response' => null
+                    ];
+                }
+                $this->processRestApiCall($method, $url, $params, $headers, $authenticate);
             }
 
             if ($apiResponse->failed()) {
@@ -385,11 +399,12 @@ class RestApiService
      * @param array $params
      * @param array $headers
      * @param bool $authenticate
+     * @param bool $forceAuthenticate
      *
      * @return array
      */
-    public function processGetApi($url = '', $params = [], $headers = [], $authenticate = true) {
-        return $this->processRestApiCall('GET', $url, $params, $headers, $authenticate);
+    public function processGetApi($url = '', $params = [], $headers = [], $authenticate = true, $forceAuthenticate = false) {
+        return $this->processRestApiCall('GET', $url, $params, $headers, $authenticate, $forceAuthenticate);
     }
 
     /**
@@ -399,11 +414,12 @@ class RestApiService
      * @param array $params
      * @param array $headers
      * @param bool $authenticate
+     * @param bool $forceAuthenticate
      *
      * @return array
      */
-    public function processPostApi($url = '', $params = [], $headers = [], $authenticate = true) {
-        return $this->processRestApiCall('POST', $url, $params, $headers, $authenticate);
+    public function processPostApi($url = '', $params = [], $headers = [], $authenticate = true, $forceAuthenticate = false) {
+        return $this->processRestApiCall('POST', $url, $params, $headers, $authenticate, $forceAuthenticate);
     }
 
     /**
@@ -413,11 +429,12 @@ class RestApiService
      * @param array $params
      * @param array $headers
      * @param bool $authenticate
+     * @param bool $forceAuthenticate
      *
      * @return array
      */
-    public function processPutApi($url = '', $params = [], $headers = [], $authenticate = true) {
-        return $this->processRestApiCall('PUT', $url, $params, $headers, $authenticate);
+    public function processPutApi($url = '', $params = [], $headers = [], $authenticate = true, $forceAuthenticate = false) {
+        return $this->processRestApiCall('PUT', $url, $params, $headers, $authenticate, $forceAuthenticate);
     }
 
     /**
@@ -427,11 +444,12 @@ class RestApiService
      * @param array $params
      * @param array $headers
      * @param bool $authenticate
+     * @param bool $forceAuthenticate
      *
      * @return array
      */
-    public function processDeleteApi($url = '', $params = [], $headers = [], $authenticate = true) {
-        return $this->processRestApiCall('DELETE', $url, $params, $headers, $authenticate);
+    public function processDeleteApi($url = '', $params = [], $headers = [], $authenticate = true, $forceAuthenticate = false) {
+        return $this->processRestApiCall('DELETE', $url, $params, $headers, $authenticate, $forceAuthenticate);
     }
 
 }

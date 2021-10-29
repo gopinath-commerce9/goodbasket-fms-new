@@ -68,6 +68,9 @@ var DashboardCustomJsBlocks = function() {
                 setInterval(function () {getRealData(hostUrl, orderIds, token)}, 5000);
             });
         },
+        orderViewPage: function(hostUrl) {
+
+        },
     };
 
 }();
