@@ -6,5 +6,9 @@
     "UserAuth": true,
     "Dashboard": true,
     "Sales": true,
-    "Configuration": true
+    "Configuration": true,
+    "Admin": true,
+    "Supervisor": true,
+    "Picker": true,
+    "Driver": true
 }
