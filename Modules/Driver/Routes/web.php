@@ -11,6 +11,21 @@
 |
 */
 
-Route::prefix('driver')->group(function() {
-    Route::get('/', 'DriverController@index');
+use Modules\Base\Http\Middleware\BlockInvalidUserMiddleware;
+use Modules\UserRole\Http\Middleware\AuthUserRolePathResolver;
+
+Route::prefix('driver')->middleware([
+    BlockInvalidUserMiddleware::class . ':auth-user',
+    AuthUserRolePathResolver::class . ':auth-user',
+])->group(function() {
+    Route::get('/', 'DriverController@index')
+        ->name('driver.index');
+    Route::get('/dashboard', 'DriverController@dashboard')
+        ->name('driver.dashboard');
+    Route::get('/order-view/{orderId}', 'DriverController@viewOrder')
+        ->name('driver.viewOrder');
+    Route::post('/find-order', 'DriverController@searchOrderByIncrementId')
+        ->name('driver.searchOrderByIncrementId');
+    Route::post('/filter-order', 'DriverController@searchOrderByFilters')
+        ->name('driver.searchOrderByFilters');
 });
