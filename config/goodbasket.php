@@ -128,10 +128,11 @@ return [
         'out_for_delivery' => 'Out For Delivery',
         'ready_to_dispatch' => 'Ready To Dispatch',
         'payment_review'  => 'Payment Review',
-        'pending'  => 'Processing',
+        'pending'  => 'Pending',
         'pending_payment' => 'Pending Payment',
         'processing' => 'Processing',
         'returned' => 'Returned',
+        'delivered' => 'Delivered',
     ],
 
     'emirates' => [
@@ -139,6 +140,27 @@ return [
         'SHJ' =>'Sharjah',
         'AUH'=>'Abu Dhabhi',
         'AJM' => 'Ajman'
+    ],
+
+    'role_allowed_statuses' => [
+        'supervisor' => [
+            'processing',
+            'being_prepared',
+            'holded',
+            'ready_to_dispatch',
+            'out_for_delivery',
+            'delivered',
+        ],
+        'picker' => [
+            'processing',
+            'being_prepared',
+            'holded',
+        ],
+        'driver' => [
+            'ready_to_dispatch',
+            'out_for_delivery',
+            'delivered',
+        ],
     ],
 
 ];
