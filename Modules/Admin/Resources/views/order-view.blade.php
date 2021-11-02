@@ -9,7 +9,7 @@
         <div class="col-md-12">
 
             <div class="card card-custom overflow-hidden">
-                <form action="{{ url('/dashboard/sale_order_status_change') }}" method="POST" id="order_view_status_change_form">
+                <form action="{{ url('/admin/sale_order_status_change') }}" method="POST" id="order_view_status_change_form">
                     @csrf
 
                     <div class="card-body p-0">
@@ -149,7 +149,7 @@
                             <div class="col-md-11">
                                 <div class="d-flex justify-content-between">
                                     <?php if($saleOrderData['order_status'] == "pending" || $saleOrderData['order_status'] == "processing") {?>
-                                    <a href="{{ url('/dashboard/being-prepared/' . $saleOrderData['id']) }}" class="btn btn-primary font-weight-bold">Being Prepared</a>
+                                    <a href="{{ url('/admin/being-prepared/' . $saleOrderData['id']) }}" class="btn btn-primary font-weight-bold">Being Prepared</a>
 
                                     <?php } ?>
                                     <?php if($saleOrderData['order_status'] == "being_prepared") {?>
@@ -230,7 +230,7 @@
 
                                         <tr>
                                             <td>
-                                                <a href="{{ url('/dashboard/print-order-shipping-label' . $saleOrderData['id']) }}" class="btn btn-primary font-weight-bold">Print Shipping Label</a>
+                                                <a href="{{ url('/admin/print-order-shipping-label' . $saleOrderData['id']) }}" class="btn btn-primary font-weight-bold">Print Shipping Label</a>
                                             </td>
                                             <td>
                                                 <?php /* ?>
@@ -251,7 +251,7 @@
 
                                     <input type="hidden" name="orderid" value="<?php echo $_GET['orderid']?>">
 
-                                    <a href="{{ url('/dashboard/order-status-change?orderid=' . $saleOrderData['id'] . '&orderstatus=delivered') }}" class="btn btn-primary font-weight-bold">Set As Delivered</a>
+                                    <a href="{{ url('/admin/order-status-change?orderid=' . $saleOrderData['id'] . '&orderstatus=delivered') }}" class="btn btn-primary font-weight-bold">Set As Delivered</a>
 
                                     <?php
                                     }?>
@@ -452,10 +452,10 @@
 
 @section('custom-js-section')
 
-    <script src="{{ asset('js/dashboard.js') }}"></script>
+    <script src="{{ asset('js/admin.js') }}"></script>
     <script>
         jQuery(document).ready(function() {
-            DashboardCustomJsBlocks.orderViewPage('{{ url('/') }}');
+            AdminCustomJsBlocks.orderViewPage('{{ url('/') }}');
         });
     </script>
 

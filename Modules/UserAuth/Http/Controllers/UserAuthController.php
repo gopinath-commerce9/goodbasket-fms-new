@@ -5,6 +5,7 @@ namespace Modules\UserAuth\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Route;
 use Redirect;
 use Auth;
 use Input;
@@ -104,7 +105,12 @@ class UserAuthController extends Controller
             }
             $request->session()->put('authUserData', $userDetails);
 
-            return redirect()->intended(route($this->redirectRoute));
+            if (!is_null($userDetails['roleCode']) &&  Route::has($userDetails['roleCode'] . '.index')) {
+                return redirect()->intended(route($userDetails['roleCode'] . '.index'));
+            } else {
+                return redirect()->intended(route($this->redirectRoute));
+            }
+
         }
 
         return back()

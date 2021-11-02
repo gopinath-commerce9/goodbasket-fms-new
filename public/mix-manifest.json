@@ -9,5 +9,7 @@
     "/js/users.js": "/js/users.js",
     "/js/permission.js": "/js/permission.js",
     "/css/dashboard.css": "/css/dashboard.css",
-    "/js/dashboard.js": "/js/dashboard.js"
+    "/js/dashboard.js": "/js/dashboard.js",
+    "/css/admin.css": "/css/admin.css",
+    "/js/admin.js": "/js/admin.js"
 }

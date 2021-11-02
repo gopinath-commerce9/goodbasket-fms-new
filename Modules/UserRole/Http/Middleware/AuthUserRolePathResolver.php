@@ -1,22 +1,20 @@
 <?php
 
-namespace Modules\Base\Http\Middleware;
+namespace Modules\UserRole\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
 use Auth;
 use Illuminate\Support\Facades\Route;
 use Modules\UserRole\Entities\UserRole;
+use App\Models\User;
 use Modules\UserRole\Entities\UserRoleMap;
 
-class ValidUserDivertMiddleware
+class AuthUserRolePathResolver
 {
 
-    /**
-     * Where to redirect admins after login.
-     *
-     * @var string
-     */
+    protected $redirectFail = '/userauth';
+
     protected $redirectPass = '/dashboard';
 
     /**
@@ -32,6 +30,18 @@ class ValidUserDivertMiddleware
 
         switch($guard){
             case 'auth-user':
+
+                $currentUri = $request->route()->uri();
+                $uriSplitter = explode('/', $currentUri);
+                $roleUri = $uriSplitter[0];
+                $roleUriClean = strtolower(str_replace(' ', '_', trim(urldecode($roleUri))));
+
+                $isUriARole = false;
+                $roleListFilter = UserRole::firstWhere('code', $roleUriClean);
+                if ($roleListFilter) {
+                    $isUriARole = true;
+                }
+
                 if (Auth::guard($guard)->check()) {
 
                     $currentRoleId = null;
@@ -49,13 +59,22 @@ class ValidUserDivertMiddleware
                         }
                     }
 
-                    if (Route::has($currentRole . '.index')) {
-                        return redirect()->route($currentRole . '.index');
+                    if ($isUriARole && (is_null($currentRole) || (!is_null($currentRole) && ($roleUriClean !== $currentRole)))) {
+                        if (!is_null($currentRole) && Route::has($currentRole . '.index')) {
+                            return redirect()->route($currentRole . '.index')->with('message', 'The user does not have access to the page!');
+                        } else {
+                            return redirect($this->redirectPass)->with('message', 'The user does not have access to the page!');
+                        }
                     } else {
-                        return redirect($this->redirectPass);
+                        $next($request);
                     }
 
+                } else {
+                    if ($isUriARole) {
+                        return redirect($this->redirectFail)->with('message', 'The user does not have access to the page!');
+                    }
                 }
+
                 break;
             default:
                 $next($request);
@@ -63,6 +82,5 @@ class ValidUserDivertMiddleware
         }
 
         return $next($request);
-
     }
 }

@@ -8,7 +8,7 @@
 
     <div class="row">
         <div class="col-md-12">
-            <form action="{{ url('/dashboard/export-orderwise-items') }}" method="post" id="delivery_details_actions_form">
+            <form action="{{ url('/admin/export-orderwise-items') }}" method="post" id="delivery_details_actions_form">
                 @csrf
                 <!--begin::Card-->
                 <div class="card card-custom gutter-b">
@@ -106,7 +106,7 @@
                                     $status = $orderStatuses[$status];
                                 }
 
-                                $viewLink = url('/dashboard/order-view/' . $orderId);
+                                $viewLink = url('/admin/order-view/' . $orderId);
                                 ?>
                                 <tr>
                                     <td><input type="checkbox" name="order[]" value="{{ $orderId }}" /></td>
@@ -147,7 +147,7 @@
                                                 <i class="ki ki-arrow-back"></i></a></li>
                                         <?php }  else { ?>
                                         <li class="paginate_button page-item previous disabled" id="kt_datatable_previous">
-                                            <a href="{{ url('/dashboard/delivery-details') }}?region=<?php echo $region;?>&interval=<?php echo $interval;?>&date=<?php echo $date;?>&countrows=10&pageno=<?php echo $backwardPageNo = $pageNo - 1; ?>" aria-controls="kt_datatable" data-dt-idx="0" tabindex="0" class="page-link">
+                                            <a href="{{ url('/admin/delivery-details') }}?region=<?php echo $region;?>&interval=<?php echo $interval;?>&date=<?php echo $date;?>&countrows=10&pageno=<?php echo $backwardPageNo = $pageNo - 1; ?>" aria-controls="kt_datatable" data-dt-idx="0" tabindex="0" class="page-link">
                                                 <i class="ki ki-arrow-back"></i></a></li>
                                         <?php } ?>
                                         <?php for ($x = $startPageLink; $x <= $endPageLink; $x++)  { ?>
@@ -156,7 +156,7 @@
                                             <a href="#" tabindex="0" class="page-link"><?php echo $x; ?></a>
                                         </li>
                                         <?php }  else { ?>
-                                        <li class="paginate_button page-item "><a href="{{ url('/dashboard/delivery-details') }}?region=<?php echo $region;?>&interval=<?php echo $interval;?>&date=<?php echo $date;?>&countrows=10&pageno=<?php echo $x; ?>"><?php echo $x; ?></a></li>
+                                        <li class="paginate_button page-item "><a href="{{ url('/admin/delivery-details') }}?region=<?php echo $region;?>&interval=<?php echo $interval;?>&date=<?php echo $date;?>&countrows=10&pageno=<?php echo $x; ?>"><?php echo $x; ?></a></li>
                                         <?php }
                                         } ?>
                                         <?php if( $pageNo == $totalPages){ ?>
@@ -165,7 +165,7 @@
                                         </li>
                                         <?php } else { ?>
                                         <li class="paginate_button page-item next" id="kt_datatable_next">
-                                            <a href="{{ url('/dashboard/delivery-details') }}?region=<?php echo $region;?>&interval=<?php echo $interval;?>&date=<?php echo $date;?>&countrows=10&pageno=<?php echo $forwardPageNo = $pageNo + 1; ?>" aria-controls="kt_datatable" data-dt-idx="6" tabindex="0" class="page-link"><i class="ki ki-arrow-next"></i></a>
+                                            <a href="{{ url('/admin/delivery-details') }}?region=<?php echo $region;?>&interval=<?php echo $interval;?>&date=<?php echo $date;?>&countrows=10&pageno=<?php echo $forwardPageNo = $pageNo + 1; ?>" aria-controls="kt_datatable" data-dt-idx="6" tabindex="0" class="page-link"><i class="ki ki-arrow-next"></i></a>
                                         </li>
                                         <?php } ?>
                                     </ul>
@@ -186,10 +186,10 @@
 
 @section('custom-js-section')
 
-    <script src="{{ asset('js/dashboard.js') }}"></script>
+    <script src="{{ asset('js/admin.js') }}"></script>
     <script>
         jQuery(document).ready(function() {
-            DashboardCustomJsBlocks.deliveryDetailsPage('{{ url('/') }}', '{{ implode(',', $orderIds) }}', '{{ csrf_token() }}');
+            AdminCustomJsBlocks.deliveryDetailsPage('{{ url('/') }}', '{{ implode(',', $orderIds) }}', '{{ csrf_token() }}');
         });
     </script>
 
