@@ -140,4 +140,24 @@ class SaleOrder extends Model
         return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id');
     }
 
+    /**
+     * Fetches the Pickup Process Data of the Sale Order.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function pickupData() {
+        return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id')
+            ->where('action', '=', SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKUP);
+    }
+
+    /**
+     * Fetches the Delivery Process Data of the Sale Order.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function deliveryData() {
+        return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id')
+            ->where('action', '=', SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERY);
+    }
+
 }
