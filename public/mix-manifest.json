@@ -11,5 +11,11 @@
     "/css/dashboard.css": "/css/dashboard.css",
     "/js/dashboard.js": "/js/dashboard.js",
     "/css/admin.css": "/css/admin.css",
-    "/js/admin.js": "/js/admin.js"
+    "/js/admin.js": "/js/admin.js",
+    "/css/driver.css": "/css/driver.css",
+    "/js/driver.js": "/js/driver.js",
+    "/css/picker.css": "/css/picker.css",
+    "/js/picker.js": "/js/picker.js",
+    "/css/supervisor.css": "/css/supervisor.css",
+    "/js/supervisor.js": "/js/supervisor.js"
 }
