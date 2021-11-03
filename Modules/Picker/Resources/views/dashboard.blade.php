@@ -60,7 +60,7 @@
 
                                     <div class="form-group row">
                                         <div class="col-lg-4">
-                                            <select class="form-control" id="emirates_region" name="emirates_region" >
+                                            <select class="form-control datatable-input" id="emirates_region" name="emirates_region" >
                                                 <option value="" >Select a Region</option>
                                                 @foreach($emirates as $emirateKey => $emirateName)
                                                     <option value="{{ $emirateKey }}" >{{ $emirateName }}</option>
@@ -68,7 +68,7 @@
                                             </select>
                                         </div>
                                         <div class="col-lg-4">
-                                            <select class="form-control" id="channel_filter" name="channel_filter" >
+                                            <select class="form-control datatable-input" id="channel_filter" name="channel_filter" >
                                                 <option value="" >Select a Channel</option>
                                                 @foreach($availableApiChannels as $channelKey => $channelEl)
                                                     <option value="{{ $channelEl['id'] }}" >{{ $channelEl['name'] }}</option>
@@ -76,7 +76,7 @@
                                             </select>
                                         </div>
                                         <div class="col-lg-4">
-                                            <select class="form-control" id="order_status_filter" name="order_status_filter" >
+                                            <select class="form-control datatable-input" id="order_status_filter" name="order_status_filter" >
                                                 <option value="" >Select an Order Status</option>
                                                 @foreach($availableStatuses as $statusKey => $statusEl)
                                                     <option value="{{ $statusKey }}" >{{ $statusEl }}</option>
@@ -87,10 +87,10 @@
 
                                     <div class="form-group row">
                                         <div class="col-lg-4">
-                                            <input type="text" class="form-control" id="delivery_date_filter" name="delivery_date_filter" readonly placeholder="Select Delivery Date"/>
+                                            <input type="text" class="form-control datatable-input" id="delivery_date_filter" name="delivery_date_filter" readonly placeholder="Select Delivery Date" />
                                         </div>
                                         <div class="col-lg-4">
-                                            <select class="form-control" id="delivery_slot_filter" name="delivery_slot_filter" >
+                                            <select class="form-control datatable-input" id="delivery_slot_filter" name="delivery_slot_filter" >
                                                 <option value="" >Select a Time Slot</option>
                                                 @foreach($deliveryTimeSlots as $deliveryEl)
                                                     <option value="{{ $deliveryEl }}" >{{ $deliveryEl }}</option>
@@ -98,7 +98,12 @@
                                             </select>
                                         </div>
                                         <div class="col-lg-4 text-right">
-                                            <button type="button" id="filter_picker_order_filter_btn" class="btn btn-primary btn-lg mr-2">Filter</button>
+                                            <button type="button" id="filter_picker_order_filter_btn" class="btn btn-primary btn-lg mr-2">
+                                                <span><i class="la la-search"></i>Search</span>
+                                            </button>
+                                            <button type="button" id="filter_picker_order_reset_btn" class="btn btn-primary btn-lg mr-2">
+                                                <span><i class="la la-close"></i>Reset</span>
+                                            </button>
                                         </div>
                                     </div>
 
@@ -113,7 +118,7 @@
                             <div class="col-md-12">
 
                                 <div class="table-responsive text-center" id="picker_order_filter_table_area">
-                                    <table class="table table-bordered" id="picker_order_filter_table">
+                                    <table class="table table-bordered table-hover" id="picker_order_filter_table">
 
                                         <thead>
                                             <tr>
@@ -128,48 +133,6 @@
                                             </tr>
                                         </thead>
 
-                                        <tbody>
-
-                                        <?php foreach($pickerOrders as $record)
-                                        {
-
-                                            $orderId = $record->id;
-                                            $incrementId = $record->increment_id;
-                                            $apiChannelId = $record->channel;
-                                            $apiChannel = $availableApiChannels[$apiChannelId];
-                                            $emirateId = $record->region_code;
-                                            $emirateName = $emirates[$emirateId];
-                                            $deliveryDate = $record->delivery_date;
-                                            $deliverySlot = $record->delivery_time_slot;
-                                            $orderStatusId = $record->order_status;
-                                            $orderStatus = $availableStatuses[$orderStatusId];
-                                            $deliveryPickerTime = '';
-                                            $deliveryPickerData = $record->pickupData;
-                                            $viewLink = url('/picker/order-view/' . $orderId);
-                                            if ($deliveryPickerData && (count($deliveryPickerData) > 0)) {
-                                                $pickerDetail = $deliveryPickerData[0];
-                                                $deliveryPickerTime = $serviceHelper->getFormattedTime($pickerDetail->done_at, 'F d, Y, h:i:s A');
-                                            }
-
-                                        ?>
-                                        <tr>
-                                            <td>{{ $incrementId }}</td>
-                                            <td>{{ $apiChannel['name'] }}</td>
-                                            <td>{{ $emirateName }}</td>
-                                            <td>{{ $deliveryDate }}</td>
-                                            <td>{{ $deliverySlot }}</td>
-                                            <td>{{ $deliveryPickerTime }}</td>
-                                            <td>
-                                                <span class="label label-lg font-weight-bold label-light-primary label-inline">
-                                                    {{ $orderStatus }}
-                                                </span>
-                                            </td>
-                                            <td><a href="{{ $viewLink }}" target="_blank">View Order</a></td>
-                                        </tr>
-                                        <?php
-                                        }
-                                        ?>
-                                        </tbody>
                                     </table>
                                 </div>
 

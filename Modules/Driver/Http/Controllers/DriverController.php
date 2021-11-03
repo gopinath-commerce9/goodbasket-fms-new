@@ -95,6 +95,11 @@ class DriverController extends Controller
 
         $serviceHelper = new DriverServiceHelper();
 
+        $dtDraw = (
+            $request->has('draw')
+            && (trim($request->input('draw')) != '')
+        ) ? (int)trim($request->input('draw')) : 1;
+
         $emirates = config('goodbasket.emirates');
         $region = (
             $request->has('emirates_region')
@@ -134,33 +139,41 @@ class DriverController extends Controller
         $filteredOrderData = [];
         foreach ($filteredOrders as $record) {
             $tempRecord = [];
-            $tempRecord['order_id'] = $record->id;
-            $tempRecord['increment_id'] = $record->increment_id;
+            $tempRecord['recordId'] = $record->id;
+            $tempRecord['orderId'] = $record->order_id;
+            $tempRecord['incrementId'] = $record->increment_id;
             $apiChannelId = $record->channel;
             $tempRecord['channel'] = $availableApiChannels[$apiChannelId]['name'];
             $emirateId = $record->region_code;
             $tempRecord['region'] = $emirates[$emirateId];
-            $tempRecord['delivery_date'] = $record->delivery_date;
-            $tempRecord['delivery_time_slot'] = $record->delivery_time_slot;
-            $tempRecord['delivery_picker_time'] = '';
-            $tempRecord['delivery_driver_time'] = '';
+            $tempRecord['deliveryDate'] = $record->delivery_date;
+            $tempRecord['deliveryTimeSlot'] = $record->delivery_time_slot;
+            $tempRecord['deliveryPickerTime'] = '';
+            $tempRecord['deliveryDriverTime'] = '';
             $orderStatusId = $record->order_status;
-            $tempRecord['order_status'] = $availableStatuses[$orderStatusId];
+            $tempRecord['orderStatus'] = $availableStatuses[$orderStatusId];
             $deliveryPickerData = $record->pickupData;
-            $deliveryDriverData = $record->deliveryData;
-            $tempRecord['view_link'] = url('/driver/order-view/' . $record->id);
+            $tempRecord['actions'] = url('/driver/order-view/' . $record->id);
             if ($deliveryPickerData && (count($deliveryPickerData) > 0)) {
                 $pickerDetail = $deliveryPickerData[0];
-                $tempRecord['delivery_picker_time'] = $serviceHelper->getFormattedTime($pickerDetail->done_at, 'F d, Y, h:i:s A');
+                $tempRecord['deliveryPickerTime'] = $serviceHelper->getFormattedTime($pickerDetail->done_at, 'F d, Y, h:i:s A');
             }
+            $deliveryDriverData = $record->deliveryData;
             if ($deliveryDriverData && (count($deliveryDriverData) > 0)) {
                 $driverDetail = $deliveryDriverData[0];
-                $tempRecord['delivery_driver_time'] = $serviceHelper->getFormattedTime($driverDetail->done_at, 'F d, Y, h:i:s A');
+                $tempRecord['deliveryDriverTime'] = $serviceHelper->getFormattedTime($driverDetail->done_at, 'F d, Y, h:i:s A');
             }
             $filteredOrderData[] = $tempRecord;
         }
 
-        return response()->json($filteredOrderData, 200);
+        $returnData = [
+            'draw' => $dtDraw,
+            'recordsTotal' => count($filteredOrderData),
+            'recordsFiltered' => count($filteredOrderData),
+            'data' => $filteredOrderData
+        ];
+
+        return response()->json($returnData, 200);
 
     }
 

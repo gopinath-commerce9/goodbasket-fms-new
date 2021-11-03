@@ -22,10 +22,14 @@ var PickerCustomJsBlocks = function() {
         });
     };
 
+    $.fn.dataTable.Api.register('column().title()', function() {
+        return $(this.header()).text().trim();
+    });
+
     var initPickerSaleOrderTable = function() {
 
         var table = $('#picker_order_filter_table');
-
+        var targetForm = $('form#filter_picker_order_form');
         var dataTable = table.DataTable({
             responsive: true,
             dom: `<'row'<'col-sm-12'tr>>
@@ -33,10 +37,64 @@ var PickerCustomJsBlocks = function() {
             lengthMenu: [5, 10, 25, 50],
             pageLength: 10,
             order: [[0, 'asc']],
-            columnDefs: [],
+            searchDelay: 500,
+            processing: true,
+            language: {
+                processing: '<div class="btn btn-secondary spinner spinner-dark spinner-right">Please Wait</div>',
+            },
+            serverSide: true,
+            ajax: {
+                url: targetForm.attr('action'),
+                type: targetForm.attr('method'),
+                data: function(d) {
+                    $.each(targetForm.serializeArray(), function(key, val) {
+                        d[val.name] = val.value;
+                    });
+                    d['columnsDef'] = [
+                        'incrementId', 'channel', 'region', 'deliveryDate', 'deliveryTimeSlot',
+                        'deliveryPickerTime', 'orderStatus', 'actions'
+                    ];
+                },
+            },
+            columns: [
+                {data: 'incrementId'},
+                {data: 'channel'},
+                {data: 'region'},
+                {data: 'deliveryDate'},
+                {data: 'deliveryTimeSlot'},
+                {data: 'deliveryPickerTime'},
+                {data: 'orderStatus'},
+                {data: 'actions', responsivePriority: -1},
+            ],
+            columnDefs: [{
+                targets: -1,
+                title: 'Actions',
+                orderable: false,
+                render: function(data, type, full, meta) {
+                    return '<a href="' + data + '" target="_blank">View Order</a>';
+                },
+            }, {
+                targets: 6,
+                title: 'Status',
+                orderable: true,
+                render: function(data, type, full, meta) {
+                    return '<span class="label label-lg font-weight-bold label-light-primary label-inline">' + data + '</span>';
+                },
+            }],
         });
 
-        return dataTable;
+        $('button#filter_picker_order_filter_btn').on('click', function(e) {
+            e.preventDefault();
+            dataTable.table().draw();
+        });
+
+        $('button#filter_picker_order_reset_btn').on('click', function(e) {
+            e.preventDefault();
+            $('.datatable-input').each(function() {
+                $(this).val('');
+            });
+            dataTable.table().draw();
+        });
 
     };
 
@@ -56,50 +114,7 @@ var PickerCustomJsBlocks = function() {
     return {
         dashboardPage: function(hostUrl){
             setDeliveryDateFilterDatePicker();
-            var dataTable  = initPickerSaleOrderTable();
-            jQuery(document).ready(function() {
-                $('button#filter_picker_order_filter_btn').on('click', function(e){
-                    var targetForm = $('form#filter_picker_order_form');
-                    $.ajax({
-                        url: targetForm.attr('action'),
-                        method: targetForm.attr('method'),
-                        data: targetForm.serialize(),
-                        beforeSend: function() {
-                            KTApp.block('#picker_order_filter_table_area', {
-                                overlayColor: '#000000',
-                                state: 'danger',
-                                message: 'Please wait...'
-                            });
-                        },
-                        success: function(response){
-                            if (response.length > 0) {
-                                var tableHtml = '';
-                                $.each(response, function(index,value) {
-                                    tableHtml += '<tr></tr><td>' + value.increment_id + '</td>';
-                                    tableHtml += '<td>' + value.channel + '</td>';
-                                    tableHtml += '<td>' + value.region + '</td>';
-                                    tableHtml += '<td>' + value.delivery_date + '</td>';
-                                    tableHtml += '<td>' + value.delivery_time_slot + '</td>';
-                                    tableHtml += '<td>' + value.delivery_picker_time + '</td>';
-                                    tableHtml += '<td><span class="label label-lg font-weight-bold label-light-primary label-inline">' + value.order_status + '</span></td>';
-                                    tableHtml += '<td><a href="' + value.view_link + '" target="_blank">View Order</a></td></tr>';
-                                });
-                                $('table#picker_order_filter_table tbody').html(tableHtml);
-                            } else {
-                                $('table#picker_order_filter_table tbody').html('<td colspan="8" class="text-center">No Orders found!</td>');
-                            }
-                            if($.fn.dataTable.isDataTable('#picker_order_filter_table')) {
-                                $('#picker_order_filter_table').dataTable({
-                                    retrieve: true,
-                                    paging: true
-                                });
-                            }
-                            KTApp.unblock('#picker_order_filter_table_area');
-                        }
-                    });
-
-                });
-            });
+            initPickerSaleOrderTable();
         },
         orderViewPage: function(hostUrl) {
 
