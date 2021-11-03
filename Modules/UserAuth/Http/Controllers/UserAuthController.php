@@ -93,6 +93,7 @@ class UserAuthController extends Controller
                 'email' => $authUserData['email'],
                 'roleId' => null,
                 'roleCode' => null,
+                'roleName' => null,
             ];
             $roleMapData = UserRoleMap::firstWhere('user_id', $authUserData['id']);
             if ($roleMapData) {
@@ -101,6 +102,7 @@ class UserAuthController extends Controller
                 if ($roleData) {
                     $userDetails['roleId'] = $roleData->id;
                     $userDetails['roleCode'] = $roleData->code;
+                    $userDetails['roleName'] = $roleData->display_name;
                 }
             }
             $request->session()->put('authUserData', $userDetails);

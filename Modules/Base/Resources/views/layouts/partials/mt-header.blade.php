@@ -16,16 +16,22 @@
 
             <!--begin::User-->
             <div class="topbar-item">
+                <?php
+                $loggedHeaderUserName = '';
+                $loggedHeaderUserRole = '';
+                    if (session()->has('authUserData')) {
+                        $sessionUser = session('authUserData');
+                        $loggedHeaderUserName = ucwords($sessionUser['name']);
+                        $loggedHeaderUserRole = ucwords($sessionUser['roleName']);
+                    }
+                ?>
+                <div class="d-flex flex-column text-right pr-3">
+                    <span class="text-muted font-weight-bold font-size-base d-none d-md-inline">{{ $loggedHeaderUserName }}</span>
+                    <span class="text-dark-75 font-weight-bolder font-size-base d-none d-md-inline">{{ $loggedHeaderUserRole }}</span>
+                </div>
                 <div class="dropdown dropdown-inline mr-2 show">
                     <button type="button" class="btn btn-light-primary font-weight-bolder dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        <?php
-                            $loggedHeaderUserName = 'Hi';
-                            if (session()->has('authUserData')) {
-                                $sessionUser = session('authUserData');
-                                $loggedHeaderUserName .= ', ' . ucwords($sessionUser['name']);
-                            }
-                        ?>
-                        <?= $loggedHeaderUserName; ?>
+                        <?= 'Hi, ' . $loggedHeaderUserName; ?>
                     </button>
                     <!--begin::Dropdown Menu-->
                     <div class="dropdown-menu dropdown-menu-sm dropdown-menu-right show" x-placement="top-end" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-62px, -165px, 0px);">
