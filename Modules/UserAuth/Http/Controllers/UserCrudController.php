@@ -232,7 +232,7 @@ class UserCrudController extends Controller
             }
         }
 
-        if ($givenUserData->isDefaultUser() && $roleAssiged && (is_null($givenUserRole) || ($givenUserRole->code != UserRole::ADMIN_ROLE))) {
+        if ($givenUserData->isDefaultUser() && $roleAssiged && (is_null($givenUserRole) || ($givenUserRole->code != UserRole::USER_ROLE_ADMIN))) {
             return back()
                 ->with('error', "The Role of the default User '". $givenUserData->email . " 'cannot be changed!")
                 ->withInput($request->only('user_name'));

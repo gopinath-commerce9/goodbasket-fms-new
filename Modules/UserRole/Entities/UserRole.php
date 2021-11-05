@@ -10,7 +10,10 @@ class UserRole extends Model
 {
     use HasFactory;
 
-    const ADMIN_ROLE = 'admin';
+    const USER_ROLE_ADMIN = 'admin';
+    const USER_ROLE_SUPERVISOR = 'supervisor';
+    const USER_ROLE_PICKER = 'picker';
+    const USER_ROLE_DRIVER = 'driver';
 
     /**
      * The attributes that are mass assignable.
@@ -82,9 +85,73 @@ class UserRole extends Model
      * @return bool
      */
     public function isAdmin() {
-        return ($this->code === self::ADMIN_ROLE)
+        return ($this->code === self::USER_ROLE_ADMIN)
             ? true
             : false;
+    }
+
+    /**
+     * Fetches all the Users with the UserRole 'Admin'
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function allAdmins() {
+        return $this->belongsToMany(
+            User::class,
+            (new UserRoleMap())->getTable(),
+            'role_id',
+            'user_id'
+        )->where('code', self::USER_ROLE_ADMIN)
+            ->withPivot('is_active')
+            ->withTimestamps();
+    }
+
+    /**
+     * Fetches all the Users with the UserRole 'Supervisor'
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function allSupervisors() {
+        return $this->belongsToMany(
+            User::class,
+            (new UserRoleMap())->getTable(),
+            'role_id',
+            'user_id'
+        )->where('code', self::USER_ROLE_SUPERVISOR)
+            ->withPivot('is_active')
+            ->withTimestamps();
+    }
+
+    /**
+     * Fetches all the Users with the UserRole 'Picker'
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function allPickers() {
+        $pickerObj = self::where('code', self::USER_ROLE_PICKER)->get();
+        if (is_null($pickerObj)) {
+            return null;
+        } else {
+            $pickerRole = $pickerObj->first();
+            $pickerRole->mappedUsers;
+            return $pickerRole;
+        }
+    }
+
+    /**
+     * Fetches all the Users with the UserRole 'Driver'
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function allDrivers() {
+        return $this->belongsToMany(
+            User::class,
+            (new UserRoleMap())->getTable(),
+            'role_id',
+            'user_id'
+        )->where('code', self::USER_ROLE_DRIVER)
+            ->withPivot('is_active')
+            ->withTimestamps();
     }
 
 }
