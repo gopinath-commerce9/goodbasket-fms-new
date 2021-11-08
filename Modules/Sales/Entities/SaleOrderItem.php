@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class SaleOrderItem extends Model
 {
 
+    const STORE_AVAILABLE_YES = 1;
+    const STORE_AVAILABLE_NO = 0;
+    const STORE_AVAILABLE_NOT_CHECKED = null;
+
     /**
      * The table associated with the model.
      *
@@ -55,6 +59,8 @@ class SaleOrderItem extends Model
         'row_grand_total',
         'vendor_id',
         'vendor_availability',
+        'store_availability',
+        'availability_checked_at',
         'is_active',
     ];
 
@@ -72,6 +78,17 @@ class SaleOrderItem extends Model
      */
     public function saleOrder() {
         return $this->belongsTo(SaleOrder::class, 'order_id', 'id');
+    }
+
+    /**
+     * Checks whether the given Sale Order Item is Available at the Store.
+     *
+     * @return bool
+     */
+    public function isStoreAvailable() {
+        return ($this->store_availability == self::STORE_AVAILABLE_YES)
+            ? true
+            : false;
     }
 
 }

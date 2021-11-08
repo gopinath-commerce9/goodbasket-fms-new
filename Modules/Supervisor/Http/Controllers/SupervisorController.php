@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Supervisor\Entities\SupervisorServiceHelper;
 use Modules\Sales\Entities\SaleOrder;
+use Modules\UserRole\Entities\UserRole;
 
 class SupervisorController extends Controller
 {
@@ -43,6 +44,10 @@ class SupervisorController extends Controller
         $supervisorOrders = $serviceHelper->getSupervisorOrders();
         $regionOrderCount = (!is_null($supervisorOrders)) ? count($supervisorOrders) : 0;
 
+        $userRoleObj = new UserRole();
+        $pickers = $userRoleObj->allPickers();
+        $drivers = $userRoleObj->allDrivers();
+
         return view('supervisor::dashboard', compact(
             'pageTitle',
             'pageSubTitle',
@@ -54,7 +59,9 @@ class SupervisorController extends Controller
             'availableApiChannels',
             'availableStatuses',
             'deliveryTimeSlots',
-            'serviceHelper'
+            'serviceHelper',
+            'pickers',
+            'drivers'
         ));
 
     }

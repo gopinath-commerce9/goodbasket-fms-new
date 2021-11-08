@@ -134,28 +134,45 @@ class PickerController extends Controller
             return response()->json([], 200);
         }
 
+        $userId = 0;
+        if (session()->has('authUserData')) {
+            $sessionUser = session('authUserData');
+            $userId = (int)$sessionUser['id'];
+        }
+
         $filteredOrderData = [];
         foreach ($filteredOrders as $record) {
-            $tempRecord = [];
-            $tempRecord['recordId'] = $record->id;
-            $tempRecord['orderId'] = $record->order_id;
-            $tempRecord['incrementId'] = $record->increment_id;
-            $apiChannelId = $record->channel;
-            $tempRecord['channel'] = $availableApiChannels[$apiChannelId]['name'];
-            $emirateId = $record->region_code;
-            $tempRecord['region'] = $emirates[$emirateId];
-            $tempRecord['deliveryDate'] = $record->delivery_date;
-            $tempRecord['deliveryTimeSlot'] = $record->delivery_time_slot;
-            $tempRecord['deliveryPickerTime'] = '';
-            $orderStatusId = $record->order_status;
-            $tempRecord['orderStatus'] = $availableStatuses[$orderStatusId];
-            $deliveryPickerData = $record->pickupData;
-            $tempRecord['actions'] = url('/picker/order-view/' . $record->id);
+            $deliveryPickerData = $record->currentPicker;
+            $canProceed = false;
+            $pickerDetail = null;
             if ($deliveryPickerData && (count($deliveryPickerData) > 0)) {
-                $pickerDetail = $deliveryPickerData[0];
-                $tempRecord['deliveryPickerTime'] = $serviceHelper->getFormattedTime($pickerDetail->done_at, 'F d, Y, h:i:s A');
+                foreach ($deliveryPickerData as $dPicker) {
+                    if (($userId > 0) && !is_null($dPicker->done_by) && ((int)$dPicker->done_by == $userId)) {
+                        $canProceed = true;
+                        $pickerDetail = $dPicker;
+                    }
+                }
             }
-            $filteredOrderData[] = $tempRecord;
+            if ($canProceed) {
+                $tempRecord = [];
+                $tempRecord['recordId'] = $record->id;
+                $tempRecord['orderId'] = $record->order_id;
+                $tempRecord['incrementId'] = $record->increment_id;
+                $apiChannelId = $record->channel;
+                $tempRecord['channel'] = $availableApiChannels[$apiChannelId]['name'];
+                $emirateId = $record->region_code;
+                $tempRecord['region'] = $emirates[$emirateId];
+                $tempRecord['deliveryDate'] = $record->delivery_date;
+                $tempRecord['deliveryTimeSlot'] = $record->delivery_time_slot;
+                $tempRecord['deliveryPickerTime'] = '';
+                $orderStatusId = $record->order_status;
+                $tempRecord['orderStatus'] = $availableStatuses[$orderStatusId];
+                $tempRecord['actions'] = url('/picker/order-view/' . $record->id);
+                if (!is_null($pickerDetail)) {
+                    $tempRecord['deliveryPickerTime'] = $serviceHelper->getFormattedTime($pickerDetail->done_at, 'F d, Y, h:i:s A');
+                }
+                $filteredOrderData[] = $tempRecord;
+            }
         }
 
         $returnData = [

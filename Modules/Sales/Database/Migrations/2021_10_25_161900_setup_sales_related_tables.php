@@ -108,6 +108,8 @@ class SetupSalesRelatedTables extends Migration
             $table->decimal('row_grand_total', 10, 2)->nullable();
             $table->unsignedBigInteger('vendor_id')->nullable();
             $table->boolean('vendor_availability')->default(0);
+            $table->boolean('store_availability')->nullable();
+            $table->dateTime('availability_checked_at')->nullable();
             $table->boolean('is_active')->default(1);
             $table->timestamps();
         });

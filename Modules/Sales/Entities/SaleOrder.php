@@ -147,7 +147,7 @@ class SaleOrder extends Model
      */
     public function pickupData() {
         return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id')
-            ->where('action', '=', SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKUP);
+            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_PICKUP_ACTIONS);
     }
 
     /**
@@ -157,7 +157,95 @@ class SaleOrder extends Model
      */
     public function deliveryData() {
         return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id')
-            ->where('action', '=', SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERY);
+            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_DELIVERY_ACTIONS);
+    }
+
+    /**
+     * Fetches the Data about who assigned the processing of the Sale Order.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function  assignerData() {
+        return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id')
+            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ASSIGNED_ACTIONS);
+    }
+
+    /**
+     * Fetches the Data about Process Completion of the Sale Order.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function completedData() {
+        return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id')
+            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_COMPLETED_ACTIONS);
+    }
+
+    /**
+     * Fetches the Data about who is currently assigned to Pickup the Sale Order.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function currentPicker() {
+        return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id')
+            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKUP)
+            ->orderBy('done_at', 'desc')
+            ->limit(1);
+    }
+
+    /**
+     * Fetches the Data about who currently assigned the Picker for the Sale Order.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function currentPickerAssigner() {
+        return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id')
+            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKUP_ASSIGN)
+            ->orderBy('done_at', 'desc')
+            ->limit(1);
+    }
+
+    /**
+     * Fetches the Data about who is currently assigned to Deliver the Sale Order.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function currentDriver() {
+        return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id')
+            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERY)
+            ->orderBy('done_at', 'desc')
+            ->limit(1);
+    }
+
+    /**
+     * Fetches the Data about who currently assigned the Driver for the Sale Order.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function currentDriverAssigner() {
+        return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id')
+            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERY_ASSIGN)
+            ->orderBy('done_at', 'desc')
+            ->limit(1);
+    }
+
+    /**
+     * Fetches the Data about who picked the Sale Order.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function pickedData() {
+        return $this->hasOne(SaleOrderProcessHistory::class, 'order_id', 'id')
+            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKED);
+    }
+
+    /**
+     * Fetches the Data about who delivered the Sale Order.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function deliveredData() {
+        return $this->hasOne(SaleOrderProcessHistory::class, 'order_id', 'id')
+            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERED);
     }
 
 }

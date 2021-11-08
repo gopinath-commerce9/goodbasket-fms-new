@@ -87,6 +87,10 @@ class UserAuthController extends Controller
         ], false)) {
 
             $authUserData = Auth::guard('auth-user')->user()->toArray();
+            $profileData = null;
+            if (!is_null($authUserData['profile_picture']) && ($authUserData['profile_picture'] != '')) {
+                $profileData = json_decode($authUserData['profile_picture'], true);
+            }
             $userDetails = [
                 'id' => $authUserData['id'],
                 'name' => $authUserData['name'],
@@ -94,6 +98,7 @@ class UserAuthController extends Controller
                 'roleId' => null,
                 'roleCode' => null,
                 'roleName' => null,
+                'userImage' => (!is_null($profileData)) ? $profileData['path'] : ''
             ];
             $roleMapData = UserRoleMap::firstWhere('user_id', $authUserData['id']);
             if ($roleMapData) {

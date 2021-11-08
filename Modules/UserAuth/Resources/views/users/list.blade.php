@@ -43,14 +43,16 @@
                 <!--begin::Card Body-->
                 <div class="card-body">
 
-                    <div  class="table-responsive">
+                    <div  class="table-responsive text-center">
                         <table class="table table-bordered table-checkable" id="user_list_table">
 
                             <thead>
                             <tr>
                                 <th>ID</th>
+                                <th>Avatar</th>
                                 <th>Name</th>
                                 <th>EMail</th>
+                                <th>Contact</th>
                                 <th>Role</th>
                                 <th>Created At</th>
                                 <th>Updated At</th>
@@ -66,8 +68,36 @@
 
                                 <tr>
                                     <td>{{ $userEl->id }}</td>
-                                    <td>{{ $userEl->name }}</td>
+                                    <td>
+                                        <span style="width: 100px;">
+                                            <div class="d-flex align-items-center">
+                                                <div class="symbol symbol-100 symbol-sm symbol-light-info flex-shrink-0" style="padding-left: 20%; padding-right: 20%;">
+                                                    <?php
+                                                        $userDisplayName = $userEl->name;
+                                                        $userInitials = '';
+                                                        $profilePicUrl = '';
+                                                        if (!is_null($userEl->profile_picture) && ($userEl->profile_picture != '')) {
+                                                            $dpData = json_decode($userEl->profile_picture, true);
+                                                            $profilePicUrlPath = $dpData['path'];
+                                                            $profilePicUrl = $serviceHelper->getUserImageUrl($profilePicUrlPath);
+                                                        }
+                                                        $userDisplayNameSplitter = explode(' ', $userDisplayName);
+                                                        foreach ($userDisplayNameSplitter as $userNameWord) {
+                                                            $userInitials .= substr($userNameWord, 0, 1);
+                                                        }
+                                                    ?>
+                                                    @if ($profilePicUrl != '')
+                                                        <img class="" src="{{ $profilePicUrl }}" alt="photo">
+                                                    @else
+                                                        <span class="symbol-label font-size-h4 font-weight-bold">{{ strtoupper($userInitials) }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </span>
+                                    </td>
+                                    <td>{{ $userDisplayName }}</td>
                                     <td>{{ $userEl->email }}</td>
+                                    <td>{{ $userEl->contact_number }}</td>
                                     <td>
                                         @if($userEl->mappedRole && (count($userEl->mappedRole) > 0))
                                             <span class="label label-lg font-weight-bold label-light-primary label-inline">

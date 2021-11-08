@@ -8,6 +8,7 @@ use Illuminate\Routing\Controller;
 use Input;
 use Modules\Driver\Entities\DriverServiceHelper;
 use Modules\Sales\Entities\SaleOrder;
+use Modules\Sales\Entities\SaleOrderProcessHistory;
 use Modules\Sales\Jobs\SaleOrderChannelImport;
 
 class DriverController extends Controller
@@ -136,34 +137,52 @@ class DriverController extends Controller
             return response()->json([], 200);
         }
 
+        $userId = 0;
+        if (session()->has('authUserData')) {
+            $sessionUser = session('authUserData');
+            $userId = (int)$sessionUser['id'];
+        }
+
         $filteredOrderData = [];
         foreach ($filteredOrders as $record) {
-            $tempRecord = [];
-            $tempRecord['recordId'] = $record->id;
-            $tempRecord['orderId'] = $record->order_id;
-            $tempRecord['incrementId'] = $record->increment_id;
-            $apiChannelId = $record->channel;
-            $tempRecord['channel'] = $availableApiChannels[$apiChannelId]['name'];
-            $emirateId = $record->region_code;
-            $tempRecord['region'] = $emirates[$emirateId];
-            $tempRecord['deliveryDate'] = $record->delivery_date;
-            $tempRecord['deliveryTimeSlot'] = $record->delivery_time_slot;
-            $tempRecord['deliveryPickerTime'] = '';
-            $tempRecord['deliveryDriverTime'] = '';
-            $orderStatusId = $record->order_status;
-            $tempRecord['orderStatus'] = $availableStatuses[$orderStatusId];
-            $deliveryPickerData = $record->pickupData;
-            $tempRecord['actions'] = url('/driver/order-view/' . $record->id);
-            if ($deliveryPickerData && (count($deliveryPickerData) > 0)) {
-                $pickerDetail = $deliveryPickerData[0];
-                $tempRecord['deliveryPickerTime'] = $serviceHelper->getFormattedTime($pickerDetail->done_at, 'F d, Y, h:i:s A');
-            }
-            $deliveryDriverData = $record->deliveryData;
+            $deliveryDriverData = $record->currentDriver;
+            $canProceed = false;
+            $driverDetail = null;
             if ($deliveryDriverData && (count($deliveryDriverData) > 0)) {
-                $driverDetail = $deliveryDriverData[0];
-                $tempRecord['deliveryDriverTime'] = $serviceHelper->getFormattedTime($driverDetail->done_at, 'F d, Y, h:i:s A');
+                foreach ($deliveryDriverData as $dDeliver) {
+                    if (($userId > 0) && !is_null($dDeliver->done_by) && ((int)$dDeliver->done_by == $userId)) {
+                        $canProceed = true;
+                        $driverDetail = $dDeliver;
+                    }
+                }
             }
-            $filteredOrderData[] = $tempRecord;
+            if ($canProceed) {
+                $tempRecord = [];
+                $tempRecord['recordId'] = $record->id;
+                $tempRecord['orderId'] = $record->order_id;
+                $tempRecord['incrementId'] = $record->increment_id;
+                $apiChannelId = $record->channel;
+                $tempRecord['channel'] = $availableApiChannels[$apiChannelId]['name'];
+                $emirateId = $record->region_code;
+                $tempRecord['region'] = $emirates[$emirateId];
+                $tempRecord['deliveryDate'] = $record->delivery_date;
+                $tempRecord['deliveryTimeSlot'] = $record->delivery_time_slot;
+                $tempRecord['deliveryPickerTime'] = '';
+                $tempRecord['deliveryDriverTime'] = '';
+                $orderStatusId = $record->order_status;
+                $tempRecord['orderStatus'] = $availableStatuses[$orderStatusId];
+                $deliveryPickerData = $record->pickedData;
+                $tempRecord['actions'] = url('/driver/order-view/' . $record->id);
+                if ($deliveryPickerData) {
+                    if ($deliveryPickerData->action == SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKED) {
+                        $tempRecord['deliveryPickerTime'] = $serviceHelper->getFormattedTime($deliveryPickerData->done_at, 'F d, Y, h:i:s A');
+                    }
+                }
+                if (!is_null($driverDetail)) {
+                    $tempRecord['deliveryDriverTime'] = $serviceHelper->getFormattedTime($driverDetail->done_at, 'F d, Y, h:i:s A');
+                }
+                $filteredOrderData[] = $tempRecord;
+            }
         }
 
         $returnData = [

@@ -8,10 +8,37 @@ use Illuminate\Database\Eloquent\Model;
 class SaleOrderProcessHistory extends Model
 {
 
+    const SALE_ORDER_PROCESS_ACTION_PICKUP_ASSIGN = 'pickup_assign';
     const SALE_ORDER_PROCESS_ACTION_PICKUP = 'pickup';
     const SALE_ORDER_PROCESS_ACTION_PICKED = 'picked';
+    const SALE_ORDER_PROCESS_ACTION_DELIVERY_ASSIGN = 'delivery_assign';
     const SALE_ORDER_PROCESS_ACTION_DELIVERY = 'delivery';
     const SALE_ORDER_PROCESS_ACTION_DELIVERED = 'delivered';
+
+    const SALE_ORDER_PROCESS_PICKUP_ACTIONS = [
+        self::SALE_ORDER_PROCESS_ACTION_PICKUP,
+        self::SALE_ORDER_PROCESS_ACTION_PICKED
+    ];
+
+    const SALE_ORDER_PROCESS_DELIVERY_ACTIONS = [
+        self::SALE_ORDER_PROCESS_ACTION_DELIVERY,
+        self::SALE_ORDER_PROCESS_ACTION_DELIVERED
+    ];
+
+    const SALE_ORDER_PROCESS_ASSIGNING_ACTIONS = [
+        self::SALE_ORDER_PROCESS_ACTION_PICKUP_ASSIGN,
+        self::SALE_ORDER_PROCESS_ACTION_DELIVERY_ASSIGN
+    ];
+
+    const SALE_ORDER_PROCESS_ASSIGNED_ACTIONS = [
+        self::SALE_ORDER_PROCESS_ACTION_PICKUP,
+        self::SALE_ORDER_PROCESS_ACTION_DELIVERY
+    ];
+
+    const SALE_ORDER_PROCESS_COMPLETED_ACTIONS = [
+        self::SALE_ORDER_PROCESS_ACTION_PICKED,
+        self::SALE_ORDER_PROCESS_ACTION_DELIVERED
+    ];
 
     /**
      * The table associated with the model.
