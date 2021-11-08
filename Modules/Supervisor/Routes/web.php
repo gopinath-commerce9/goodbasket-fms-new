@@ -22,6 +22,10 @@ Route::prefix('supervisor')->middleware([
         ->name('supervisor.index');
     Route::get('/dashboard', 'SupervisorController@dashboard')
         ->name('supervisor.dashboard');
+    Route::get('/picker-view/{pickerId}', 'SupervisorController@viewPicker')
+        ->name('supervisor.viewPicker');
+    Route::get('/driver-view/{driverId}', 'SupervisorController@viewDriver')
+        ->name('supervisor.viewDriver');
     Route::get('/order-view/{orderId}', 'SupervisorController@viewOrder')
         ->name('supervisor.viewOrder');
     Route::post('/find-order', 'SupervisorController@searchOrderByIncrementId')

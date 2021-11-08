@@ -6,14 +6,19 @@ namespace Modules\Supervisor\Entities;
 use Modules\Base\Entities\RestApiService;
 use Modules\Sales\Entities\SaleOrder;
 use DB;
+use Modules\Base\Entities\BaseServiceHelper;
+use App\Models\User;
+use Modules\Sales\Entities\SaleOrderProcessHistory;
 
 class SupervisorServiceHelper
 {
 
     private $restApiService = null;
+    private $baseService = null;
 
     public function __construct($channel = '')
     {
+        $this->baseService = new BaseServiceHelper();
         $this->restApiService = new RestApiService();
         $this->setApiChannel($channel);
     }
@@ -145,7 +150,9 @@ class SupervisorServiceHelper
             $orderRequest->where('delivery_time_slot', trim($timeSlot));
         }
 
-        return $orderRequest->orderBy('delivery_date', 'asc')->get();
+        $orderRequest->orderBy('delivery_date', 'asc');
+
+        return $orderRequest->get();
 
     }
 
@@ -168,6 +175,51 @@ class SupervisorServiceHelper
 
         return ($apiResult['status']) ? $apiResult['response'] : [];
 
+    }
+
+    public function getFileUrl($path = '') {
+        return $this->baseService->getFileUrl($path);
+    }
+
+    public function getUserImageUrl($path = '') {
+        return $this->baseService->getFileUrl('media/images/users/' . $path);
+    }
+
+    public function isPickerAssigned(User $picker = null) {
+        $assignmentObj = null;
+        if (is_null($picker) && (count($picker->saleOrderProcessHistory) > 0)) {
+            foreach ($picker->saleOrderProcessHistory as $processHistory) {
+                if ($processHistory->action == SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKUP) {
+                    if (
+                        ($processHistory->saleOrder)
+                        && ($processHistory->saleOrder->order_status == SaleOrder::SALE_ORDER_STATUS_BEING_PREPARED)
+                    ) {
+                        $assignmentObj = $processHistory;
+                    }
+                }
+            }
+        }
+        return $assignmentObj;
+    }
+
+    public function isDriverAssigned(User $driver = null) {
+        $assignmentObj = null;
+        if (is_null($driver) && (count($driver->saleOrderProcessHistory) > 0)) {
+            foreach ($driver->saleOrderProcessHistory as $processHistory) {
+                if ($processHistory->action == SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERY) {
+                    if (
+                        ($processHistory->saleOrder)
+                        && (
+                            ($processHistory->saleOrder->order_status == SaleOrder::SALE_ORDER_STATUS_READY_TO_DISPATCH)
+                            || ($processHistory->saleOrder->order_status == SaleOrder::SALE_ORDER_STATUS_OUT_FOR_DELIVERY)
+                        )
+                    ) {
+                        $assignmentObj = $processHistory;
+                    }
+                }
+            }
+        }
+        return $assignmentObj;
     }
 
 }

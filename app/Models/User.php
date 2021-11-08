@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Modules\Sales\Entities\SaleOrderProcessHistory;
 use Modules\UserAddress\Entities\ProofType;
 use Modules\UserAddress\Entities\UserAddress;
 use Modules\UserAddress\Entities\UserProof;
@@ -147,6 +148,15 @@ class User extends Authenticatable
             'user_id',
             'vehicle_id'
         )->withPivot('is_active')->withTimestamps();
+    }
+
+    /**
+     * Fetches the History of the Sale Orders handled by the User.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function saleOrderProcessHistory() {
+        return $this->hasMany(SaleOrderProcessHistory::class, 'done_by', 'id');
     }
 
 }

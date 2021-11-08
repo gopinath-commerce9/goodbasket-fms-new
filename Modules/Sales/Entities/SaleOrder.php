@@ -11,10 +11,19 @@ class SaleOrder extends Model
         'pending',
         'processing',
         'being_prepared',
+        'holded',
         'ready_to_dispatch',
         'out_for_delivery',
         'delivered'
     ];
+
+    const SALE_ORDER_STATUS_PENDING = 'pending';
+    const SALE_ORDER_STATUS_PROCESSING = 'processing';
+    const SALE_ORDER_STATUS_BEING_PREPARED = 'being_prepared';
+    const SALE_ORDER_STATUS_ON_HOLD = 'holded';
+    const SALE_ORDER_STATUS_READY_TO_DISPATCH = 'ready_to_dispatch';
+    const SALE_ORDER_STATUS_OUT_FOR_DELIVERY = 'out_for_delivery';
+    const SALE_ORDER_STATUS_DELIVERED = 'delivered';
 
     /**
      * The table associated with the model.

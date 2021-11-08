@@ -26,6 +26,58 @@ var SupervisorCustomJsBlocks = function() {
         return $(this.header()).text().trim();
     });
 
+    var initSupervisorPickersListTable = function() {
+        var table = $('#supervisor_picker_list_table');
+        var dataTable = table.DataTable({
+            responsive: true,
+            dom: `<'row'<'col-sm-12'tr>>
+			<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 5,
+            order: [[0, 'asc']],
+            columnDefs: []
+        });
+    };
+
+    var initSupervisorDriversListTable = function() {
+        var table = $('#supervisor_driver_list_table');
+        var dataTable = table.DataTable({
+            responsive: true,
+            dom: `<'row'<'col-sm-12'tr>>
+			<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 5,
+            order: [[0, 'asc']],
+            columnDefs: []
+        });
+    };
+
+    var initSupervisorPickerOrderListTable = function() {
+        var table = $('#picker_view_orders_table');
+        var dataTable = table.DataTable({
+            responsive: true,
+            dom: `<'row'<'col-sm-12'tr>>
+			<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 5,
+            order: [[0, 'asc']],
+            columnDefs: []
+        });
+    };
+
+    var initSupervisorDriverOrderListTable = function() {
+        var table = $('#driver_view_orders_table');
+        var dataTable = table.DataTable({
+            responsive: true,
+            dom: `<'row'<'col-sm-12'tr>>
+			<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 5,
+            order: [[0, 'asc']],
+            columnDefs: []
+        });
+    };
+
     var initSupervisorSaleOrderTable = function() {
 
         var table = $('#supervisor_order_filter_table');
@@ -35,7 +87,7 @@ var SupervisorCustomJsBlocks = function() {
             dom: `<'row'<'col-sm-12'tr>>
 			<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
             lengthMenu: [5, 10, 25, 50],
-            pageLength: 10,
+            pageLength: 5,
             order: [[0, 'asc']],
             searchDelay: 500,
             processing: true,
@@ -117,7 +169,15 @@ var SupervisorCustomJsBlocks = function() {
     return {
         dashboardPage: function(hostUrl){
             setDeliveryDateFilterDatePicker();
+            initSupervisorPickersListTable();
+            initSupervisorDriversListTable();
             initSupervisorSaleOrderTable();
+        },
+        pickerViewPage: function(hostUrl) {
+            initSupervisorPickerOrderListTable();
+        },
+        driverViewPage: function(hostUrl) {
+            initSupervisorDriverOrderListTable();
         },
         orderViewPage: function(hostUrl) {
 

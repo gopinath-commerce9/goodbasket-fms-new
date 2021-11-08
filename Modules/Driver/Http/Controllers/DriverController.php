@@ -101,6 +101,16 @@ class DriverController extends Controller
             && (trim($request->input('draw')) != '')
         ) ? (int)trim($request->input('draw')) : 1;
 
+        $dtStart = (
+            $request->has('start')
+            && (trim($request->input('start')) != '')
+        ) ? (int)trim($request->input('start')) : 0;
+
+        $dtPageLength = (
+            $request->has('length')
+            && (trim($request->input('length')) != '')
+        ) ? (int)trim($request->input('length')) : 10;
+
         $emirates = config('goodbasket.emirates');
         $region = (
             $request->has('emirates_region')
@@ -144,6 +154,10 @@ class DriverController extends Controller
         }
 
         $filteredOrderData = [];
+        $totalRec = 0;
+        $collectRecStart = $dtStart;
+        $collectRecEnd = $collectRecStart + $dtPageLength;
+        $currentRec = -1;
         foreach ($filteredOrders as $record) {
             $deliveryDriverData = $record->currentDriver;
             $canProceed = false;
@@ -157,6 +171,11 @@ class DriverController extends Controller
                 }
             }
             if ($canProceed) {
+                $totalRec++;
+                $currentRec++;
+                if (($currentRec < $collectRecStart) || ($currentRec >= $collectRecEnd)) {
+                    continue;
+                }
                 $tempRecord = [];
                 $tempRecord['recordId'] = $record->id;
                 $tempRecord['orderId'] = $record->order_id;
@@ -187,8 +206,8 @@ class DriverController extends Controller
 
         $returnData = [
             'draw' => $dtDraw,
-            'recordsTotal' => count($filteredOrderData),
-            'recordsFiltered' => count($filteredOrderData),
+            'recordsTotal' => $totalRec,
+            'recordsFiltered' => $totalRec,
             'data' => $filteredOrderData
         ];
 
