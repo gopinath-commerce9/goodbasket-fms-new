@@ -5,8 +5,12 @@ namespace Modules\Picker\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Modules\Picker\Entities\PickerServiceHelper;
 use Modules\Sales\Entities\SaleOrder;
+use Modules\Sales\Entities\SaleOrderItem;
+use Modules\UserRole\Entities\UserRole;
 
 class PickerController extends Controller
 {
@@ -76,12 +80,33 @@ class PickerController extends Controller
         $currentChannel = $serviceHelper->getApiChannel();
         $currentEnv = $serviceHelper->getApiEnvironment();
 
+        $userId = 0;
+        if (session()->has('authUserData')) {
+            $sessionUser = session('authUserData');
+            $userId = (int)$sessionUser['id'];
+        }
+
         $targetOrder = SaleOrder::firstWhere('increment_id', $incrementId)
             ->where('env', $currentEnv)
             ->where('channel', $currentChannel)
             ->whereIn('order_status', array_keys($availableStatuses));
         if ($targetOrder) {
-            return redirect('/picker/order-view/' . $targetOrder->id);
+            $deliveryPickerData = $targetOrder->currentPicker;
+            $canProceed = false;
+            if ($deliveryPickerData && (count($deliveryPickerData) > 0)) {
+                foreach ($deliveryPickerData as $dPicker) {
+                    if (($userId > 0) && !is_null($dPicker->done_by) && ((int)$dPicker->done_by == $userId)) {
+                        $canProceed = true;
+                    }
+                }
+            }
+            if ($canProceed) {
+                return redirect('/picker/order-view/' . $targetOrder->id);
+            } else {
+                return back()
+                    ->with('error', "Sale Order #" . $incrementId . " not accessible!");
+            }
+
         } else {
             return back()
                 ->with('error', "Sale Order #" . $incrementId . " not found!");
@@ -181,6 +206,8 @@ class PickerController extends Controller
                 $tempRecord['channel'] = $availableApiChannels[$apiChannelId]['name'];
                 $emirateId = $record->region_code;
                 $tempRecord['region'] = $emirates[$emirateId];
+                $shipAddress = $record->shippingAddress;
+                $tempRecord['customerName'] = $shipAddress->first_name . ' ' . $shipAddress->last_name;
                 $tempRecord['deliveryDate'] = $record->delivery_date;
                 $tempRecord['deliveryTimeSlot'] = $record->delivery_time_slot;
                 $tempRecord['deliveryPickerTime'] = '';
@@ -256,6 +283,12 @@ class PickerController extends Controller
         $saleOrderObj->shippingAddress;
         $saleOrderObj->paymentData;
         $saleOrderObj->statusHistory;
+        $saleOrderObj->processHistory;
+        if ($saleOrderObj->processHistory && (count($saleOrderObj->processHistory) > 0)) {
+            foreach($saleOrderObj->processHistory as $processHistory) {
+                $processHistory->actionDoer;
+            }
+        }
         $saleOrderData = $saleOrderObj->toArray();
 
         return view('picker::order-view', compact(
@@ -268,6 +301,82 @@ class PickerController extends Controller
             'serviceHelper',
             'orderStatuses'
         ));
+
+    }
+
+    public function orderStatusChange(Request $request, $orderId) {
+
+        if (is_null($orderId) || !is_numeric($orderId) || ((int)$orderId <= 0)) {
+            return back()
+                ->with('error', 'The Sale Order Id input is invalid!');
+        }
+
+        $saleOrderObj = SaleOrder::find($orderId);
+        if(!$saleOrderObj) {
+            return back()
+                ->with('error', 'The Sale Order does not exist!');
+        }
+
+        $allowedStatuses = [
+            SaleOrder::SALE_ORDER_STATUS_BEING_PREPARED
+        ];
+        if (!in_array($saleOrderObj->order_status, $allowedStatuses)) {
+            return back()
+                ->with('error', 'The Sale Order Status cannot be changed!');
+        }
+
+        $processUserId = 0;
+        if (session()->has('authUserData')) {
+            $sessionUser = session('authUserData');
+            $processUserId = $sessionUser['id'];
+        }
+
+        $canProceed = false;
+        if ($saleOrderObj->currentPicker && (count($saleOrderObj->currentPicker) > 0)) {
+            $currentHistory = $saleOrderObj->currentPicker[0];
+            if ($currentHistory->done_by === $processUserId) {
+                $canProceed = true;
+            }
+        }
+        if (!$canProceed) {
+            return back()
+                ->with('error', 'The Sale Order is not assigned to the user!');
+        }
+
+        $orderItemCount = count($saleOrderObj->orderItems);
+        $allowedAvailabilityValues = [
+            SaleOrderItem::STORE_AVAILABLE_YES,
+            SaleOrderItem::STORE_AVAILABLE_NO
+        ];
+
+        $validator = Validator::make($request->all() , [
+            'box_qty' => ['required', 'numeric', 'integer', 'min:1'],
+            'store_availability' => ['required', 'array', 'size:' . $orderItemCount],
+            'store_availability.*' => [Rule::in($allowedAvailabilityValues)],
+        ], [
+            'box_qty.required' => 'The Box Count should not be empty.',
+            'box_qty.min' => 'The Box Count should be atleast :min.',
+            'store_availability.required' => 'The Order Items are not checked for Store Availability.',
+            'store_availability.*.in' => 'Some of the Order Items are not checked for Store Availability.',
+        ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput($request->only('box_qty'));
+        }
+
+        $postData = $validator->validated();
+        $boxCount = $postData['box_qty'];
+        $storeAvailabilityArray = $postData['store_availability'];
+
+        $serviceHelper = new PickerServiceHelper();
+        $returnResult = $serviceHelper->setOrderAsDispatchReady($saleOrderObj, $boxCount, $storeAvailabilityArray, $processUserId);
+        if ($returnResult) {
+            return redirect('picker/dashboard')->with('success', 'The Sale Order status is updated successfully!');
+        } else {
+            return redirect('picker/dashboard')->with('error', $returnResult['message']);
+        }
 
     }
 

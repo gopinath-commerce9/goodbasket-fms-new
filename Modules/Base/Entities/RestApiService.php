@@ -24,15 +24,7 @@ class RestApiService
      * RestApiService constructor.
      */
     public function __construct() {
-        $mainConfigs = config($this->mainConfigKey);
-        $apiConfigs = $mainConfigs[$this->apiConfigKey];
-        $this->apiEnvironment = $mainConfigs['defaults']['apiEnv'];
-        $this->apiEnvConfigs = $apiConfigs[$this->apiEnvironment];
-        $this->apiChannels = $this->apiEnvConfigs['channels'];
-        $this->apiDefaultChannel = $this->apiEnvConfigs['defaults']['channel'];
-        $this->apiChannel = $this->apiDefaultChannel;
-        $this->apiDefaultCountry = $this->apiEnvConfigs['defaults']['country_code'];
-        $this->apiCountry = $this->apiDefaultCountry;
+        $this->setApiEnvironment();
     }
 
     /**
@@ -257,6 +249,27 @@ class RestApiService
      */
     public function getApiEnvironment() {
         return $this->apiEnvironment;
+    }
+
+    /**
+     * Set the RESTFul API Environment.
+     *
+     * @param string $env
+     */
+    public function setApiEnvironment($env = '') {
+        $mainConfigs = config($this->mainConfigKey);
+        $apiConfigs = $mainConfigs[$this->apiConfigKey];
+        $availableEnvs = array_keys($apiConfigs);
+        $defaultEnv = $mainConfigs['defaults']['apiEnv'];
+        $targetEnv = strtolower(str_replace(' ', '_', trim($env)));
+        $envClean = (in_array($targetEnv, $availableEnvs)) ? $targetEnv : $defaultEnv;
+        $this->apiEnvironment = $envClean;
+        $this->apiEnvConfigs = $apiConfigs[$this->apiEnvironment];
+        $this->apiChannels = $this->apiEnvConfigs['channels'];
+        $this->apiDefaultChannel = $this->apiEnvConfigs['defaults']['channel'];
+        $this->apiChannel = $this->apiDefaultChannel;
+        $this->apiDefaultCountry = $this->apiEnvConfigs['defaults']['country_code'];
+        $this->apiCountry = $this->apiDefaultCountry;
     }
 
     /**

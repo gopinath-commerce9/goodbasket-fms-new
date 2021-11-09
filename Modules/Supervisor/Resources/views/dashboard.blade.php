@@ -37,7 +37,7 @@
                                                 <th>Name</th>
                                                 <th>EMail</th>
                                                 <th>Contact</th>
-                                                <th>Assigned Order</th>
+                                                <th>Assigned Order Count</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -80,14 +80,23 @@
                                                         <td>{{ $userEl->email }}</td>
                                                         <td>{{ $userEl->contact_number }}</td>
                                                         <td>
-                                                            <?php $processObj = $serviceHelper->isPickerAssigned($userEl) ?>
-                                                            @if(!is_null($processObj))
-                                                                <?php $currentOrder = $processObj->saleOrder; ?>
-                                                                <a href="{{ url('/supervisor/order-view/' . $currentOrder->id) }}" class="btn btn-primary btn-clean mr-2" title="View Sale Order">
-                                                                    <span class="label label-inline">{{ "#" . $currentOrder->increment_id }}</span>
-                                                                </a>
+                                                            @if($userEl->saleOrderProcessHistory && (count($userEl->saleOrderProcessHistory) > 0))
+                                                                <?php $pickerOrderCount = 0; ?>
+                                                                @foreach ($userEl->saleOrderProcessHistory as $processHistory)
+                                                                    @if ($processHistory->action == \Modules\Sales\Entities\SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKUP)
+                                                                        @if (
+                                                                            ($processHistory->saleOrder)
+                                                                            && ($processHistory->saleOrder->order_status == \Modules\Sales\Entities\SaleOrder::SALE_ORDER_STATUS_BEING_PREPARED)
+                                                                        )
+                                                                            <?php $pickerOrderCount++; ?>
+                                                                        @endif
+                                                                    @endif
+                                                                @endforeach
+                                                                <span class="label label-lg font-weight-bold label-light-primary label-inline">
+                                                                    {{ ($pickerOrderCount > 0) ? $pickerOrderCount . ' Order(s)' : 'No Orders' }}
+                                                                </span>
                                                             @else
-                                                                <span class="label label-lg font-weight-bold label-light-primary label-inline">Not Assigned</span>
+                                                                <span class="label label-lg font-weight-bold label-light-primary label-inline">No Orders</span>
                                                             @endif
                                                         </td>
                                                         <td nowrap="nowrap">
@@ -145,7 +154,7 @@
                                                 <th>Name</th>
                                                 <th>EMail</th>
                                                 <th>Contact</th>
-                                                <th>Assigned Order</th>
+                                                <th>Order Assigned</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -188,14 +197,26 @@
                                                         <td>{{ $userEl->email }}</td>
                                                         <td>{{ $userEl->contact_number }}</td>
                                                         <td>
-                                                            <?php $processObj = $serviceHelper->isDriverAssigned($userEl) ?>
-                                                            @if(!is_null($processObj))
-                                                                <?php $currentOrder = $processObj->saleOrder; ?>
-                                                                <a href="{{ url('/supervisor/order-view/' . $currentOrder->id) }}" class="btn btn-primary btn-clean mr-2" title="View Sale Order">
-                                                                    <span>{{ "#" . $currentOrder->increment_id }}</span>
-                                                                </a>
+                                                            @if($userEl->saleOrderProcessHistory && (count($userEl->saleOrderProcessHistory) > 0))
+                                                                <?php $driverOrderCount = 0; ?>
+                                                                @foreach ($userEl->saleOrderProcessHistory as $processHistory)
+                                                                    @if ($processHistory->action == \Modules\Sales\Entities\SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERY)
+                                                                        @if (
+                                                                            ($processHistory->saleOrder)
+                                                                            && (
+                                                                                ($processHistory->saleOrder->order_status == \Modules\Sales\Entities\SaleOrder::SALE_ORDER_STATUS_READY_TO_DISPATCH)
+                                                                                || ($processHistory->saleOrder->order_status == \Modules\Sales\Entities\SaleOrder::SALE_ORDER_STATUS_OUT_FOR_DELIVERY)
+                                                                            )
+                                                                        )
+                                                                            <?php $driverOrderCount++; ?>
+                                                                        @endif
+                                                                    @endif
+                                                                @endforeach
+                                                                <span class="label label-lg font-weight-bold label-light-primary label-inline">
+                                                                    {{ ($driverOrderCount > 0) ? $driverOrderCount . ' Order(s)' : 'No Orders' }}
+                                                                </span>
                                                             @else
-                                                                <span class="label label-lg font-weight-bold label-light-primary label-inline">Not Assigned</span>
+                                                                <span class="label label-lg font-weight-bold label-light-primary label-inline">No Orders</span>
                                                             @endif
                                                         </td>
                                                         <td nowrap="nowrap">
@@ -348,6 +369,7 @@
                                                 <th># Order Id</th>
                                                 <th>Channel</th>
                                                 <th>Emirates</th>
+                                                <th>Customer Name</th>
                                                 <th>Delivery Date</th>
                                                 <th>Delivery Schedule Interval</th>
                                                 <th>Picker</th>

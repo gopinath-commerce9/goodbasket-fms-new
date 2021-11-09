@@ -51,7 +51,7 @@ var PickerCustomJsBlocks = function() {
                         d[val.name] = val.value;
                     });
                     d['columnsDef'] = [
-                        'incrementId', 'channel', 'region', 'deliveryDate', 'deliveryTimeSlot',
+                        'incrementId', 'channel', 'region', 'customerName', 'deliveryDate', 'deliveryTimeSlot',
                         'deliveryPickerTime', 'orderStatus', 'actions'
                     ];
                 },
@@ -60,6 +60,7 @@ var PickerCustomJsBlocks = function() {
                 {data: 'incrementId'},
                 {data: 'channel'},
                 {data: 'region'},
+                {data: 'customerName'},
                 {data: 'deliveryDate'},
                 {data: 'deliveryTimeSlot'},
                 {data: 'deliveryPickerTime'},
@@ -74,7 +75,7 @@ var PickerCustomJsBlocks = function() {
                     return '<a href="' + data + '" target="_blank">View Order</a>';
                 },
             }, {
-                targets: 6,
+                targets: 7,
                 title: 'Status',
                 orderable: true,
                 render: function(data, type, full, meta) {
@@ -98,6 +99,45 @@ var PickerCustomJsBlocks = function() {
 
     };
 
+    var orderFormActions = function() {
+
+        var form = jQuery('#order_view_status_change_form');
+        jQuery('input#picker_btn_submit').on('click', function (e) {
+            e.preventDefault();
+            var boxCount = jQuery('input#box_qty_1').val();
+            if (isNaN(boxCount) || (parseInt(boxCount) <= 0)) {
+                alert('The Box Count should be minimum 1.');
+            } else {
+                var allItemsChecked = true;
+                var allItemsAvailable = true;
+                $("select.store-availability").each(function() {
+                    var itemAvailableCheck = $(this).val();
+                    if (itemAvailableCheck == '') {
+                        allItemsChecked = false;
+                    } else if (parseInt(itemAvailableCheck) == 0) {
+                        allItemsAvailable = false;
+                    }
+                });
+                if (!allItemsChecked) {
+                    alert('Some order items not checked for availability.');
+                } else {
+                    if (!allItemsAvailable) {
+                        if (confirm('Some of the order items are not available. The Sale Order will be put to "On Hold" status. Do you want to continue?')) {
+                            // Save it!
+                            form.submit();
+                        } else {
+
+                        }
+                    } else {
+                        form.submit();
+                    }
+                }
+            }
+
+        });
+
+    };
+
     var showAlertMessage = function(message) {
         $("div.custom_alert_trigger_messages_area")
             .html('<div class="alert alert-custom alert-dark alert-light-dark fade show" role="alert">' +
@@ -117,7 +157,7 @@ var PickerCustomJsBlocks = function() {
             initPickerSaleOrderTable();
         },
         orderViewPage: function(hostUrl) {
-
+            orderFormActions();
         },
     };
 

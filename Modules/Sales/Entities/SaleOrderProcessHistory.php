@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class SaleOrderProcessHistory extends Model
 {
 
+    const SALE_ORDER_PROCESS_ACTION_PROCESSING = 'processing';
     const SALE_ORDER_PROCESS_ACTION_PICKUP_ASSIGN = 'pickup_assign';
     const SALE_ORDER_PROCESS_ACTION_PICKUP = 'pickup';
     const SALE_ORDER_PROCESS_ACTION_PICKED = 'picked';

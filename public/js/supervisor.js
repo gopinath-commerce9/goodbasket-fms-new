@@ -52,6 +52,32 @@ var SupervisorCustomJsBlocks = function() {
         });
     };
 
+    var initSupervisorPickerOrderListTable = function() {
+        var table = $('#picker_view_orders_table');
+        var dataTable = table.DataTable({
+            responsive: true,
+            dom: `<'row'<'col-sm-12'tr>>
+			<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 5,
+            order: [[0, 'asc']],
+            columnDefs: []
+        });
+    };
+
+    var initSupervisorDriverOrderListTable = function() {
+        var table = $('#driver_view_orders_table');
+        var dataTable = table.DataTable({
+            responsive: true,
+            dom: `<'row'<'col-sm-12'tr>>
+			<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 5,
+            order: [[0, 'asc']],
+            columnDefs: []
+        });
+    };
+
     var initSupervisorSaleOrderTable = function() {
 
         var table = $('#supervisor_order_filter_table');
@@ -77,7 +103,7 @@ var SupervisorCustomJsBlocks = function() {
                         d[val.name] = val.value;
                     });
                     d['columnsDef'] = [
-                        'incrementId', 'channel', 'region', 'deliveryDate', 'deliveryTimeSlot', 'deliveryPicker',
+                        'incrementId', 'channel', 'region', 'customerName', 'deliveryDate', 'deliveryTimeSlot', 'deliveryPicker',
                         'deliveryPickerTime', 'deliveryDriver', 'deliveryDriverTime', 'orderStatus', 'actions'
                     ];
                 },
@@ -86,6 +112,7 @@ var SupervisorCustomJsBlocks = function() {
                 {data: 'incrementId'},
                 {data: 'channel'},
                 {data: 'region'},
+                {data: 'customerName'},
                 {data: 'deliveryDate'},
                 {data: 'deliveryTimeSlot'},
                 {data: 'deliveryPicker'},
@@ -103,7 +130,7 @@ var SupervisorCustomJsBlocks = function() {
                     return '<a href="' + data + '" target="_blank">View Order</a>';
                 },
             }, {
-                targets: 9,
+                targets: 10,
                 title: 'Status',
                 orderable: true,
                 render: function(data, type, full, meta) {
@@ -146,6 +173,12 @@ var SupervisorCustomJsBlocks = function() {
             initSupervisorPickersListTable();
             initSupervisorDriversListTable();
             initSupervisorSaleOrderTable();
+        },
+        pickerViewPage: function(hostUrl) {
+            initSupervisorPickerOrderListTable();
+        },
+        driverViewPage: function(hostUrl) {
+            initSupervisorDriverOrderListTable();
         },
         orderViewPage: function(hostUrl) {
 

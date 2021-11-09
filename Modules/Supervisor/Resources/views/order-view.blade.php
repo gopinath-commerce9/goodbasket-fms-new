@@ -9,7 +9,18 @@
         <div class="col-md-12">
 
             <div class="card card-custom overflow-hidden">
-                <form action="{{ url('/supervisor/sale_order_status_change') }}" method="POST" id="order_view_status_change_form">
+
+                <div class="card-header flex-wrap py-3">
+                    <div class="card-toolbar">
+                        <div class="col text-left">
+                            <a href="{{ url('/supervisor/dashboard') }}" class="btn btn-outline-primary">
+                                <i class="flaticon2-back"></i> Back
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <form action="{{ url('/supervisor/order-status-change/' . $saleOrderData['id']) }}" method="POST" id="order_view_status_change_form">
                     @csrf
 
                     <div class="card-body p-0">
@@ -20,7 +31,7 @@
                         <div class="row justify-content-center py-8 px-8 py-md-27 px-md-0">
                             <div class="col-md-11">
                                 <div class="d-flex justify-content-between pb-10 pb-md-20 flex-column flex-md-row">
-                                    <h1 class="display-2 font-weight-boldest mb-10"><?php echo ($saleOrderData['zone_id']) ?? ''; ?></h1>
+                                    <h1 class="display-2 font-weight-boldest mb-10"><?php echo ($saleOrderData['zone_id']) ? $saleOrderData['zone_id'] : ''; ?></h1>
                                     <div class="d-flex flex-column align-items-md-end px-0">
 
                                         <span class="d-flex flex-column align-items-md-end opacity-70">
@@ -137,7 +148,20 @@
                                     </div>
 
                                     <div class="d-flex flex-column flex-root">
-
+                                        <span class="font-weight-bolder mb-2">Order Process Histories</span>
+                                        <span class="opacity-70"><?php
+                                            $processHistoryIndex = 1;
+                                            foreach ($saleOrderData['process_history'] as $processHistory) {
+                                                echo $processHistoryIndex++ . ".) ";
+                                                echo "<b>" . ucwords(str_replace('_', ' ', trim($processHistory['action']))) . "</b>";
+                                                echo " By ";
+                                                echo "<b>" . trim($processHistory['action_doer']['name']) . "</b>";
+                                                echo " on ";
+                                                echo "<b>" . $serviceHelper->getFormattedTime($processHistory['done_at'], 'F d, Y, h:i:s A') . "</b>";
+                                                echo "<br/>";
+                                            }
+                                            ?>
+                                        </span>
                                     </div>
 
                                 </div>
@@ -148,113 +172,88 @@
                         <div class="row justify-content-center py-8 px-8 py-md-10 px-md-0">
                             <div class="col-md-11">
                                 <div class="d-flex justify-content-between">
-                                    <?php if($saleOrderData['order_status'] == "pending" || $saleOrderData['order_status'] == "processing") {?>
-                                    <a href="{{ url('/admin/being-prepared/' . $saleOrderData['id']) }}" class="btn btn-primary font-weight-bold">Being Prepared</a>
+                                    <?php if(
+                                        ($saleOrderData['order_status'] === \Modules\Sales\Entities\SaleOrder::SALE_ORDER_STATUS_PENDING)
+                                        || ($saleOrderData['order_status'] === \Modules\Sales\Entities\SaleOrder::SALE_ORDER_STATUS_PROCESSING)
+                                        || ($saleOrderData['order_status'] === \Modules\Sales\Entities\SaleOrder::SALE_ORDER_STATUS_ON_HOLD)
+                                    ) {?>
+
+                                        <div class="row">
+                                            <div class="col col-12">
+                                                <table class="table table-borderless">
+                                                    <tr>
+                                                        <td>
+                                                            <select class="form-control" name="assign_pickup_to" id="assign_pickup_to">
+                                                                <option value="">Select a Picker</option>
+                                                                @if(count($pickers->mappedUsers) > 0)
+                                                                    @foreach($pickers->mappedUsers as $userEl)
+                                                                        <option value="{{ $userEl->id }}">{{ $userEl->name }}</option>
+                                                                    @endforeach
+                                                                @endif
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="submit" name="btnsubmit" class="btn btn-primary font-weight-bold" value="Being Prepared">
+                                                        </td>
+                                                    </tr>
+
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                    <?php } elseif($saleOrderData['order_status'] === \Modules\Sales\Entities\SaleOrder::SALE_ORDER_STATUS_READY_TO_DISPATCH) { ?>
+
+                                        <div class="row">
+                                            <div class="col col-12">
+                                                <table class="table table-borderless">
+                                                    <tr>
+                                                        <td>
+                                                            <select class="form-control" name="assign_delivery_to" id="assign_delivery_to">
+                                                                <option value="">Select a Driver</option>
+                                                                @if(count($drivers->mappedUsers) > 0)
+                                                                    @foreach($drivers->mappedUsers as $userEl)
+                                                                        <option value="{{ $userEl->id }}">{{ $userEl->name }}</option>
+                                                                    @endforeach
+                                                                @endif
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="submit" name="btnsubmit" class="btn btn-primary font-weight-bold" value="Assign Driver">
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <a href="{{ url('/supervisor/print-shipping-label/' . $saleOrderData['id']) }}" class="btn btn-primary font-weight-bold">Print Shipping Label</a>
+                                                        </td>
+                                                        <td></td>
+                                                    </tr>
+
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                    <?php } else { ?>
+
+                                        <div class="row">
+                                            <div class="col col-12">
+                                                <table class="table table-borderless">
+                                                    <tr>
+                                                        <td>
+                                                            Order Status
+                                                        </td>
+                                                        <td>
+                                                            <span class="label label-lg font-weight-bold label-light-primary label-inline">
+                                                                {{ $orderStatuses[$saleOrderData['order_status']] }}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+
+                                                </table>
+                                            </div>
+                                        </div>
 
                                     <?php } ?>
-                                    <?php if($saleOrderData['order_status'] == "being_prepared") {?>
 
-                                    <input type="hidden" name="action" value="print_awd">
-                                    <input type="hidden" name="orderid" value="{{ $saleOrderData['id'] }}">
-                                    <input type="hidden" name="approvalcode" id="approvalcode" value="<?= $saleOrderData['approval_code'] ? $saleOrderData['approval_code'] : '';?>">
-
-                                    <table class="block_table">
-                                        <tr>
-
-                                            <td>
-                                                <input type="button" name="btnscan" onclick="return scanProduct()" class="btn btn-primary font-weight-bold" value="Scan Product">
-                                            </td>
-                                            <td>
-                                                <input type="button" name="btnenableentry" onclick="return enableEntry()" class="btn btn-primary font-weight-bold" value="Enable Manual Entry in Actual Qty">
-                                                <input type="button" name="btndisableentry" onclick="return disableEntry()" class="btn btn-primary font-weight-bold" value="Disable Manual Entry in Actual Qty">
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                Number of Boxes : <input type="text"  min="1"  class="box_qty"  style="text-align:center" size="5" name="box_qty" id="box_qty_1"  required="">
-                                            </td>
-                                            <td>
-
-
-                                                <?php /* ?>
-																		<input type="button" name="btnsubmit" onclick="return submitORder(this.form)" class="btn btn-primary font-weight-bold" value="Print Shipping Label">
-                                                                                   <?php */ ?>
-                                                <input type="button" name="btnsubmit" onclick="return submitORder(this.form)" class="btn btn-primary font-weight-bold" value="Ready To Dispatch">
-                                            </td>
-
-                                            <?php /* ?>
-                                                                               <td>
-                                                                                   <a href="orderstatuschange.php?orderid=<?php echo $_GET['orderid'];?>&&orderstatus=ready_to_dispatch" class="btn btn-primary font-weight-bold">Ready To Dispatch</a>
-                                                                               </td>
-                                                                               <?php */ ?>
-
-                                        </tr>
-
-
-
-                                    </table>
-
-                                    <?php  } ?>
-
-                                    <?php if($saleOrderData['order_status'] == 'ready_to_dispatch') {
-                                    ?>
-                                    <?php /* ?>
-																	 <input type="hidden" name="action" value="print_awd">
-																	<input type="hidden"  min="1"   value="1" style="text-align:center" size="5" name="box_qty"  required="">
-                                                                    <?php */ ?>
-
-                                    <input type="hidden" name="action" value="change_delivery_status">
-                                    <input type="hidden" name="orderid" value="{{ $saleOrderData['id'] }}">
-
-                                    <table class="block_table">
-                                        <tr>
-                                            <td>
-                                                <select class="form-control" name="orderstatuschanger"
-                                                        id="order-status-changer">
-                                                    <option value="">Select Status</option>
-
-                                                    <option value="out_for_delivery">Out For Delivery</option>
-                                                    <option value="delivered">Delivered</option>
-
-
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <input type="submit" name="btnsubmit" class="btn btn-primary font-weight-bold" value="Change Order Status">
-                                            </td>
-                                            <td>
-
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td>
-                                                <a href="{{ url('/admin/print-order-shipping-label' . $saleOrderData['id']) }}" class="btn btn-primary font-weight-bold">Print Shipping Label</a>
-                                            </td>
-                                            <td>
-                                                <?php /* ?>
-                                                                                <a href="downloaddeliverynote.php?orderid=<?php echo $_GET['orderid'];?>" target="_blank" class="btn btn-light-primary font-weight-bold">Download Delivery Note</a>
-                                                                                <?php */ ?>
-                                            </td>
-                                            <td>
-
-                                            </td>
-                                        </tr>
-                                    </table>
-
-                                    <?php
-                                    }?>
-
-                                    <?php if($saleOrderData['order_status'] == 'out_for_delivery') {
-                                    ?>
-
-                                    <input type="hidden" name="orderid" value="<?php echo $saleOrderData['id'] ?>">
-
-                                    <a href="{{ url('/admin/order-status-change?orderid=' . $saleOrderData['id'] . '&orderstatus=delivered') }}" class="btn btn-primary font-weight-bold">Set As Delivered</a>
-
-                                    <?php
-                                    }?>
                                 </div>
                             </div>
                         </div>
@@ -266,10 +265,10 @@
                                 <div class="table-responsive">
                                     <div class="border-bottom w-100"></div>
                                     <div>
-                                        <table class="table" id="item-list-table">
+                                        <table class="table text-center" id="item-list-table">
                                             <thead>
                                                 <tr>
-                                                    <th class="pl-0 font-weight-bold text-muted text-uppercase">Actual Quantity</th>
+                                                    <th class="pl-0 font-weight-bold text-muted text-uppercase">Store Availability</th>
                                                     <th class="text-right font-weight-bold text-muted text-uppercase">Quantity</th>
                                                     <th class="pl-0 font-weight-bold text-muted text-uppercase">Item</th>
                                                     <th class="pl-0 font-weight-bold text-muted text-uppercase">Country</th>
@@ -343,20 +342,25 @@
 
                                             ?>
                                             <tr>
-                                                <td><input type="text" class="actual_qty"  name="actual_qty[<?php echo $itemInputId;?>]" id="actual_qty_<?php echo $itemInputId;?>"  value="<?php echo $actualQty; ?>" style="width: 80px;">
-                                                    <input type="hidden"   class="actual_qty_tmp" name="tmpactual_qty[<?php echo $itemInputId;?>]" id="tmpactual_qty_<?php echo $itemInputId;?>" value="<?php echo $actualQty; ?>"  style="width: 80px;">
 
-                                                    <input type="hidden" class="ordered_qty" name="ordered_qty[<?php echo $itemInputId;?>]" id="ordered_qty_<?php echo $itemInputId;?>" value="<?php echo $item['qty_ordered']; ?>" >
-                                                    <input type="hidden" class="selling_format" name="selling_format[<?php echo $itemInputId;?>]" id="selling_format_<?php echo $itemInputId;?>" value="<?php echo $sellingFormat; ?>"  >
-                                                    <?php echo $sellingFormat;?>
-
-
-                                                    <span id="tick_mark_<?php echo $item['item_sku'];?>"  style="font-size: 20px; font-weight: bold; color: green"></span>
-
-                                                    <span>
-                                                        <a href="javascript:;" onclick="clearValue('<?php echo $itemInputId;?>')">Clear </a>
-                                                    </span>
-
+                                                <td class="border-top-0 pl-0 py-4">
+                                                    @if($item['store_availability'] === \Modules\Sales\Entities\SaleOrderItem::STORE_AVAILABLE_YES)
+                                                        <span class="label label-lg font-weight-bold label-light-success label-inline">
+                                                            Yes
+                                                        </span>
+                                                    @elseif($item['store_availability'] === \Modules\Sales\Entities\SaleOrderItem::STORE_AVAILABLE_NO)
+                                                        <span class="label label-lg font-weight-bold label-light-danger label-inline">
+                                                            No
+                                                        </span>
+                                                    @elseif($item['store_availability'] === \Modules\Sales\Entities\SaleOrderItem::STORE_AVAILABLE_NOT_CHECKED)
+                                                        <span class="label label-lg font-weight-bold label-light-info label-inline">
+                                                            Not Checked
+                                                        </span>
+                                                    @else
+                                                        <span class="label label-lg font-weight-bold label-light-info label-inline">
+                                                            Not Checked
+                                                        </span>
+                                                    @endif
                                                 </td>
 
                                                 <td class="border-top-0 pl-0 py-4"><?php echo $item['qty_ordered']." ".$sellingFormat;?></td>
@@ -398,8 +402,8 @@
                                             </tbody>
                                         </table>
                                     </div>
+                                    <div class="border-bottom w-100 my-13 opacity-15"></div>
                                 </div>
-                                <div class="border-bottom w-100 my-13 opacity-15"></div>
                                 <!--begin::Invoice total-->
 
 
@@ -407,22 +411,26 @@
                                     <table class="table text-md-right font-weight-boldest">
                                         <tbody>
                                         <tr>
+                                            <td></td>
                                             <td class="align-middle title-color font-size-lg border-0 pt-0 pl-0 w-50">SUBTOTAL</td>
                                             <td class="align-middle font-size-h3 border-0 pt-0"><?php echo $saleOrderData['order_currency']." ".$saleOrderData['order_subtotal'];?></td>
                                         </tr>
                                         <tr>
+                                            <td></td>
                                             <td class="align-middle title-color font-size-h4 border-0 py-7 pl-0 w-50">Shipping (<?php echo $saleOrderData['shipping_method'];?>)</td>
                                             <td class="align-middle font-size-h3 border-0 py-7"><?php echo $saleOrderData['order_currency']." ".$saleOrderData['shipping_total'];?></td>
                                         </tr>
                                         <?php if( !empty($saleOrderData['discount_amount']) ) {?>
                                         <tr>
 
+                                            <td></td>
                                             <td class="align-middle title-color font-size-h4 border-0 py-7 pl-0 w-50">Discount (<?php if(isset($saleOrderData['coupon_code']) && !empty($saleOrderData['coupon_code'])) { echo $saleOrderData['coupon_code']; } ?>)</td>
                                             <td class="no-line text-align-middle font-size-h3 border-0 py-7"><?php echo $saleOrderData['order_currency']." ".$saleOrderData['discount_amount'];?></td>
 
                                         </tr>
                                         <?php } ?>
                                         <tr>
+                                            <td></td>
                                             <td class="align-middle title-color font-size-h4 border-0 pl-0 w-50">GRAND TOTAL</td>
                                             <td class="text-danger font-size-h3 font-weight-boldest"><?php echo $saleOrderData['order_currency']." ".$saleOrderData['order_total'];?></td>
                                         </tr>

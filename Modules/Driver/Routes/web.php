@@ -22,10 +22,14 @@ Route::prefix('driver')->middleware([
         ->name('driver.index');
     Route::get('/dashboard', 'DriverController@dashboard')
         ->name('driver.dashboard');
-    Route::get('/order-view/{orderId}', 'DriverController@viewOrder')
-        ->name('driver.viewOrder');
     Route::post('/find-order', 'DriverController@searchOrderByIncrementId')
         ->name('driver.searchOrderByIncrementId');
     Route::post('/filter-order', 'DriverController@searchOrderByFilters')
         ->name('driver.searchOrderByFilters');
+    Route::get('/order-view/{orderId}', 'DriverController@viewOrder')
+        ->name('driver.viewOrder');
+    Route::post('/order-status-change/{orderId}', 'DriverController@orderStatusChange')
+        ->name('driver.orderStatusChange');
+    Route::get('/print-shipping-label/{orderId}', 'DriverController@printShippingLabel')
+        ->name('driver.printShippingLabel');
 });

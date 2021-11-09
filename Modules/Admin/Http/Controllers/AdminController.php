@@ -181,6 +181,12 @@ class AdminController extends Controller
         $saleOrderObj->shippingAddress;
         $saleOrderObj->paymentData;
         $saleOrderObj->statusHistory;
+        $saleOrderObj->processHistory;
+        if ($saleOrderObj->processHistory && (count($saleOrderObj->processHistory) > 0)) {
+            foreach($saleOrderObj->processHistory as $processHistory) {
+                $processHistory->actionDoer;
+            }
+        }
         $saleOrderData = $saleOrderObj->toArray();
 
         return view('admin::order-view', compact(

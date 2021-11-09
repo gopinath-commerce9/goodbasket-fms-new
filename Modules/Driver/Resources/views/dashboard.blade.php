@@ -125,6 +125,7 @@
                                                 <th># Order Id</th>
                                                 <th>Channel</th>
                                                 <th>Emirates</th>
+                                                <th>Customer Name</th>
                                                 <th>Delivery Date</th>
                                                 <th>Delivery Schedule Interval</th>
                                                 <th>Picked At</th>

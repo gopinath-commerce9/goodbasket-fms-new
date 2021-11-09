@@ -5,11 +5,16 @@ namespace Modules\Driver\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Input;
 use Modules\Driver\Entities\DriverServiceHelper;
 use Modules\Sales\Entities\SaleOrder;
 use Modules\Sales\Entities\SaleOrderProcessHistory;
 use Modules\Sales\Jobs\SaleOrderChannelImport;
+use Spipu\Html2Pdf\Exception\Html2PdfException;
+use Spipu\Html2Pdf\Exception\ExceptionFormatter;
+use Spipu\Html2Pdf\Html2Pdf;
 
 class DriverController extends Controller
 {
@@ -184,6 +189,8 @@ class DriverController extends Controller
                 $tempRecord['channel'] = $availableApiChannels[$apiChannelId]['name'];
                 $emirateId = $record->region_code;
                 $tempRecord['region'] = $emirates[$emirateId];
+                $shipAddress = $record->shippingAddress;
+                $tempRecord['customerName'] = $shipAddress->first_name . ' ' . $shipAddress->last_name;
                 $tempRecord['deliveryDate'] = $record->delivery_date;
                 $tempRecord['deliveryTimeSlot'] = $record->delivery_time_slot;
                 $tempRecord['deliveryPickerTime'] = '';
@@ -266,6 +273,12 @@ class DriverController extends Controller
         $saleOrderObj->shippingAddress;
         $saleOrderObj->paymentData;
         $saleOrderObj->statusHistory;
+        $saleOrderObj->processHistory;
+        if ($saleOrderObj->processHistory && (count($saleOrderObj->processHistory) > 0)) {
+            foreach($saleOrderObj->processHistory as $processHistory) {
+                $processHistory->actionDoer;
+            }
+        }
         $saleOrderData = $saleOrderObj->toArray();
 
         return view('driver::order-view', compact(
@@ -278,6 +291,139 @@ class DriverController extends Controller
             'serviceHelper',
             'orderStatuses'
         ));
+
+    }
+
+    public function orderStatusChange(Request $request, $orderId) {
+
+        if (is_null($orderId) || !is_numeric($orderId) || ((int)$orderId <= 0)) {
+            return back()
+                ->with('error', 'The Sale Order Id input is invalid!');
+        }
+
+        $saleOrderObj = SaleOrder::find($orderId);
+        if(!$saleOrderObj) {
+            return back()
+                ->with('error', 'The Sale Order does not exist!');
+        }
+
+        $allowedStatuses = [
+            SaleOrder::SALE_ORDER_STATUS_READY_TO_DISPATCH,
+            SaleOrder::SALE_ORDER_STATUS_OUT_FOR_DELIVERY
+        ];
+        if (!in_array($saleOrderObj->order_status, $allowedStatuses)) {
+            return back()
+                ->with('error', 'The Sale Order Status cannot be changed!');
+        }
+
+        $processUserId = 0;
+        if (session()->has('authUserData')) {
+            $sessionUser = session('authUserData');
+            $processUserId = $sessionUser['id'];
+        }
+
+        $canProceed = false;
+        if ($saleOrderObj->currentPicker && (count($saleOrderObj->currentDriver) > 0)) {
+            $currentHistory = $saleOrderObj->currentDriver[0];
+            if ($currentHistory->done_by === $processUserId) {
+                $canProceed = true;
+            }
+        }
+        if (!$canProceed) {
+            return back()
+                ->with('error', 'The Sale Order is not assigned to the user!');
+        }
+
+        $driverModifiableStatuses = [
+            SaleOrder::SALE_ORDER_STATUS_OUT_FOR_DELIVERY,
+            SaleOrder::SALE_ORDER_STATUS_DELIVERED
+        ];
+        $validator = Validator::make($request->all() , [
+            'sale_order_status' => ['required', Rule::in($driverModifiableStatuses)],
+        ], [
+            'sale_order_status.required' => 'The Sale Order Status should not be empty.',
+            'sale_order_status.in' => 'Invalid Sale Order Status.',
+        ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator);
+        }
+
+        $postData = $validator->validated();
+        $newStatus = $postData['sale_order_status'];
+
+        $serviceHelper = new DriverServiceHelper();
+        $returnResult = $serviceHelper->changeSaleOrderStatus($saleOrderObj, $newStatus, $processUserId);
+        if ($returnResult) {
+            return redirect('driver/dashboard')->with('success', 'The Sale Order status is updated successfully!');
+        } else {
+            return redirect('driver/dashboard')->with('error', $returnResult['message']);
+        }
+
+    }
+
+    public function printShippingLabel($orderId) {
+
+        if (is_null($orderId) || !is_numeric($orderId) || ((int)$orderId <= 0)) {
+            return back()
+                ->with('error', 'The Sale Order Id input is invalid!');
+        }
+
+        $saleOrderObj = SaleOrder::find($orderId);
+        if(!$saleOrderObj) {
+            return back()
+                ->with('error', 'The Sale Order does not exist!');
+        }
+
+        if($saleOrderObj->order_status !== SaleOrder::SALE_ORDER_STATUS_READY_TO_DISPATCH) {
+            return back()
+                ->with('error', 'Cannot print the Shipping Label of the Sale Order.!');
+        }
+
+        try {
+
+            $pdfOrientation = 'P';
+            $pdfPaperSize = 'A5';
+            $pdfUseLang = 'en';
+            $pdfDefaultFont = 'Arial';
+
+            $saleOrderObj->saleCustomer;
+            $saleOrderObj->orderItems;
+            $saleOrderObj->billingAddress;
+            $saleOrderObj->shippingAddress;
+            $saleOrderObj->paymentData;
+            $saleOrderObj->statusHistory;
+            $saleOrderObj->processHistory;
+            if ($saleOrderObj->processHistory && (count($saleOrderObj->processHistory) > 0)) {
+                foreach($saleOrderObj->processHistory as $processHistory) {
+                    $processHistory->actionDoer;
+                }
+            }
+            $orderData = $saleOrderObj->toArray();
+
+            $path = public_path('ktmt/media/logos/logo_goodbasket.png');
+            $type = pathinfo($path, PATHINFO_EXTENSION);
+            $data = file_get_contents($path);
+            $logoEncoded = 'data:image/' . $type . ';base64,' . base64_encode($data);
+
+            $pdfContent = view('driver::print-label', compact('orderData', 'logoEncoded'))->render();
+
+            $pdfName = "print-label-order-" . $saleOrderObj->increment_id . ".pdf";
+            $outputMode = 'D';
+
+            $html2pdf = new Html2Pdf($pdfOrientation, $pdfPaperSize, $pdfUseLang);
+            $html2pdf->setDefaultFont($pdfDefaultFont);
+            $html2pdf->writeHTML($pdfContent);
+
+            $pdfOutput = $html2pdf->output($pdfName, $outputMode);
+
+        } catch (Html2PdfException $e) {
+            $html2pdf->clean();
+            $formatter = new ExceptionFormatter($e);
+            return back()
+                ->with('error', $formatter->getMessage());
+        }
 
     }
 

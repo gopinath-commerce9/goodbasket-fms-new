@@ -22,14 +22,18 @@ Route::prefix('supervisor')->middleware([
         ->name('supervisor.index');
     Route::get('/dashboard', 'SupervisorController@dashboard')
         ->name('supervisor.dashboard');
+    Route::post('/find-order', 'SupervisorController@searchOrderByIncrementId')
+        ->name('supervisor.searchOrderByIncrementId');
+    Route::post('/filter-order', 'SupervisorController@searchOrderByFilters')
+        ->name('supervisor.searchOrderByFilters');
     Route::get('/picker-view/{pickerId}', 'SupervisorController@viewPicker')
         ->name('supervisor.viewPicker');
     Route::get('/driver-view/{driverId}', 'SupervisorController@viewDriver')
         ->name('supervisor.viewDriver');
     Route::get('/order-view/{orderId}', 'SupervisorController@viewOrder')
         ->name('supervisor.viewOrder');
-    Route::post('/find-order', 'SupervisorController@searchOrderByIncrementId')
-        ->name('supervisor.searchOrderByIncrementId');
-    Route::post('/filter-order', 'SupervisorController@searchOrderByFilters')
-        ->name('supervisor.searchOrderByFilters');
+    Route::post('/order-status-change/{orderId}', 'SupervisorController@orderStatusChange')
+        ->name('supervisor.orderStatusChange');
+    Route::get('/print-shipping-label/{orderId}', 'SupervisorController@printShippingLabel')
+        ->name('supervisor.printShippingLabel');
 });

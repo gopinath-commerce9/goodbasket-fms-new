@@ -196,7 +196,7 @@ class SaleOrder extends Model
      */
     public function currentPicker() {
         return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id')
-            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKUP)
+            ->where('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKUP)
             ->orderBy('done_at', 'desc')
             ->limit(1);
     }
@@ -208,7 +208,7 @@ class SaleOrder extends Model
      */
     public function currentPickerAssigner() {
         return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id')
-            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKUP_ASSIGN)
+            ->where('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKUP_ASSIGN)
             ->orderBy('done_at', 'desc')
             ->limit(1);
     }
@@ -220,7 +220,7 @@ class SaleOrder extends Model
      */
     public function currentDriver() {
         return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id')
-            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERY)
+            ->where('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERY)
             ->orderBy('done_at', 'desc')
             ->limit(1);
     }
@@ -232,7 +232,7 @@ class SaleOrder extends Model
      */
     public function currentDriverAssigner() {
         return $this->hasMany(SaleOrderProcessHistory::class, 'order_id', 'id')
-            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERY_ASSIGN)
+            ->where('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERY_ASSIGN)
             ->orderBy('done_at', 'desc')
             ->limit(1);
     }
@@ -244,7 +244,7 @@ class SaleOrder extends Model
      */
     public function pickedData() {
         return $this->hasOne(SaleOrderProcessHistory::class, 'order_id', 'id')
-            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKED);
+            ->where('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKED);
     }
 
     /**
@@ -254,7 +254,7 @@ class SaleOrder extends Model
      */
     public function deliveredData() {
         return $this->hasOne(SaleOrderProcessHistory::class, 'order_id', 'id')
-            ->whereIn('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERED);
+            ->where('action',  SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERED);
     }
 
 }

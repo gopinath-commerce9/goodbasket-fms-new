@@ -30,6 +30,8 @@ class ValidUserDivertMiddleware
     public function handle(Request $request, Closure $next, $guard = null)
     {
 
+        $response = $next($request);
+
         switch($guard){
             case 'auth-user':
                 if (Auth::guard($guard)->check()) {
@@ -58,11 +60,11 @@ class ValidUserDivertMiddleware
                 }
                 break;
             default:
-                $next($request);
+                return $response;
                 break;
         }
 
-        return $next($request);
+        return $response;
 
     }
 }

@@ -28,6 +28,8 @@ class AuthUserRolePathResolver
     public function handle(Request $request, Closure $next, $guard = null)
     {
 
+        $response = $next($request);
+
         switch($guard){
             case 'auth-user':
 
@@ -66,7 +68,7 @@ class AuthUserRolePathResolver
                             return redirect($this->redirectPass)->with('message', 'The user does not have access to the page!');
                         }
                     } else {
-                        $next($request);
+                        return $response;
                     }
 
                 } else {
@@ -77,10 +79,10 @@ class AuthUserRolePathResolver
 
                 break;
             default:
-                $next($request);
+                return $response;
                 break;
         }
 
-        return $next($request);
+        return $response;
     }
 }

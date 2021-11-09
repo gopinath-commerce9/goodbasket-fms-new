@@ -157,6 +157,7 @@
                                                         <th># Order Id</th>
                                                         <th>Channel</th>
                                                         <th>Emirates</th>
+                                                        <th>Customer Name</th>
                                                         <th>Delivery Date</th>
                                                         <th>Delivery Schedule Interval</th>
                                                         <th>Picker</th>
@@ -174,15 +175,16 @@
                                                     <?php
                                                         $apiChannelId = $orderEl->channel;
                                                         $emirateId = $orderEl->region_code;
-                                                        $orderStatusId = $record->order_status;
+                                                        $shipAddress = $orderEl->shippingAddress;
+                                                        $orderStatusId = $orderEl->order_status;
                                                         $pickerName = '';
                                                         $orderPickerId = 0;
                                                         $pickedAt = '';
                                                         $driverName = '';
                                                         $orderDriverId = 0;
                                                         $deliveredAt = '';
-                                                        $deliveryPickerData = $record->pickupData;
-                                                        $deliveryDriverData = $record->deliveryData;
+                                                        $deliveryPickerData = $orderEl->pickupData;
+                                                        $deliveryDriverData = $orderEl->deliveryData;
                                                         if ($deliveryPickerData && (count($deliveryPickerData) > 0)) {
                                                             $pickerDetail = $deliveryPickerData[(count($deliveryPickerData) - 1)];
                                                             $pickedAt = $serviceHelper->getFormattedTime($pickerDetail->done_at, 'F d, Y, h:i:s A');
@@ -204,10 +206,11 @@
                                                         <td>{{ $orderEl->increment_id }}</td>
                                                         <td>{{ $availableApiChannels[$apiChannelId]['name'] }}</td>
                                                         <td>{{ $emirates[$emirateId] }}</td>
+                                                        <td>{{ $shipAddress->first_name . ' ' . $shipAddress->last_name }}</td>
                                                         <td>{{ $orderEl->delivery_date }}</td>
                                                         <td>{{ $orderEl->delivery_time_slot }}</td>
                                                         <td>
-                                                            @if($orderPickerId == $givenUserData->id)
+                                                            @if(($orderPickerId == 0) || ($orderPickerId == $givenUserData->id))
                                                                 {{ $pickerName }}
                                                             @else
                                                                 <a href="{{ url('/supervisor/picker-view/' . $orderPickerId) }}" class="btn btn-primary btn-clean mr-2" title="View Picker">
@@ -217,7 +220,7 @@
                                                         </td>
                                                         <td>{{ $pickedAt }}</td>
                                                         <td>
-                                                            @if($orderDriverId == $givenUserData->id)
+                                                            @if(($orderDriverId == 0) || ($orderDriverId == $givenUserData->id))
                                                                 {{ $driverName }}
                                                             @else
                                                                 <a href="{{ url('/supervisor/driver-view/' . $orderDriverId) }}" class="btn btn-primary btn-clean mr-2" title="View Driver">

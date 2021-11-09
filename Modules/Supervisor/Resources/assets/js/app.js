@@ -103,7 +103,7 @@ var SupervisorCustomJsBlocks = function() {
                         d[val.name] = val.value;
                     });
                     d['columnsDef'] = [
-                        'incrementId', 'channel', 'region', 'deliveryDate', 'deliveryTimeSlot', 'deliveryPicker',
+                        'incrementId', 'channel', 'region', 'customerName', 'deliveryDate', 'deliveryTimeSlot', 'deliveryPicker',
                         'deliveryPickerTime', 'deliveryDriver', 'deliveryDriverTime', 'orderStatus', 'actions'
                     ];
                 },
@@ -112,6 +112,7 @@ var SupervisorCustomJsBlocks = function() {
                 {data: 'incrementId'},
                 {data: 'channel'},
                 {data: 'region'},
+                {data: 'customerName'},
                 {data: 'deliveryDate'},
                 {data: 'deliveryTimeSlot'},
                 {data: 'deliveryPicker'},
@@ -129,7 +130,7 @@ var SupervisorCustomJsBlocks = function() {
                     return '<a href="' + data + '" target="_blank">View Order</a>';
                 },
             }, {
-                targets: 9,
+                targets: 10,
                 title: 'Status',
                 orderable: true,
                 render: function(data, type, full, meta) {

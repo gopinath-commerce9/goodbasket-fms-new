@@ -6,9 +6,12 @@ namespace Modules\Supervisor\Entities;
 use Modules\Base\Entities\RestApiService;
 use Modules\Sales\Entities\SaleOrder;
 use DB;
+use \Exception;
 use Modules\Base\Entities\BaseServiceHelper;
 use App\Models\User;
+use Modules\Sales\Entities\SaleOrderPayment;
 use Modules\Sales\Entities\SaleOrderProcessHistory;
+use Modules\Sales\Entities\SaleOrderStatusHistory;
 
 class SupervisorServiceHelper
 {
@@ -143,7 +146,7 @@ class SupervisorServiceHelper
         }
 
         if (!is_null($deliveryDate) && (trim($deliveryDate) != '')) {
-            $orderRequest->where('delivery_date', trim($deliveryDate));
+            $orderRequest->where('delivery_date', date('Y-m-d', strtotime(trim($deliveryDate))));
         }
 
         if (!is_null($timeSlot) && (trim($timeSlot) != '')) {
@@ -187,7 +190,7 @@ class SupervisorServiceHelper
 
     public function isPickerAssigned(User $picker = null) {
         $assignmentObj = null;
-        if (is_null($picker) && (count($picker->saleOrderProcessHistory) > 0)) {
+        if (!is_null($picker) && (count($picker->saleOrderProcessHistory) > 0)) {
             foreach ($picker->saleOrderProcessHistory as $processHistory) {
                 if ($processHistory->action == SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKUP) {
                     if (
@@ -204,7 +207,7 @@ class SupervisorServiceHelper
 
     public function isDriverAssigned(User $driver = null) {
         $assignmentObj = null;
-        if (is_null($driver) && (count($driver->saleOrderProcessHistory) > 0)) {
+        if (!is_null($driver) && (count($driver->saleOrderProcessHistory) > 0)) {
             foreach ($driver->saleOrderProcessHistory as $processHistory) {
                 if ($processHistory->action == SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERY) {
                     if (
@@ -220,6 +223,167 @@ class SupervisorServiceHelper
             }
         }
         return $assignmentObj;
+    }
+
+    public function setOrderAsBeingPrepared(SaleOrder $order = null, $pickerId = 0, $supervisorId = 0) {
+
+        if (is_null($order)) {
+            return [
+                'status' => false,
+                'message' => 'Sale Order is empty!'
+            ];
+        }
+
+        $orderEnv = $order->env;
+        $orderChannel = $order->channel;
+        $apiService = new RestApiService();
+        $apiService->setApiEnvironment($orderEnv);
+        $apiService->setApiChannel($orderChannel);
+
+        $uri = $this->restApiService->getRestApiUrl() . 'changeorderstatus';
+        $params = [
+            'orderId' => $order->order_id,
+            'state' => SaleOrder::SALE_ORDER_STATUS_BEING_PREPARED,
+            'status' => SaleOrder::SALE_ORDER_STATUS_BEING_PREPARED
+        ];
+        $statusApiResult = $this->restApiService->processPostApi($uri, $params);
+        if (!$statusApiResult['status']) {
+            return [
+                'status' => false,
+                'message' => $statusApiResult['message']
+            ];
+        }
+
+        $uri = $apiService->getRestApiUrl() . 'orders/' . $order->order_id;
+        $orderApiResult = $this->restApiService->processGetApi($uri);
+        if (!$orderApiResult['status']) {
+            return [
+                'status' => false,
+                'message' => $orderApiResult['message']
+            ];
+        }
+
+        try {
+
+            $saleOrderEl = $orderApiResult['response'];
+            $orderUpdateResult = SaleOrder::where('id', $order->id)
+                ->update([
+                    'order_updated_at' => $saleOrderEl['updated_at'],
+                    'order_due' => $saleOrderEl['total_due'],
+                    'order_state' => $saleOrderEl['state'],
+                    'order_status' => $saleOrderEl['status'],
+                    'order_status_label' => (isset($saleOrderEl['extension_attributes']['order_status_label'])) ? $saleOrderEl['extension_attributes']['order_status_label'] : null,
+                ]);
+
+            $paymentObj = SaleOrderPayment::updateOrCreate([
+                'order_id' => $order->id,
+                'payment_id' => $saleOrderEl['payment']['entity_id'],
+                'sale_order_id' => $saleOrderEl['entity_id'],
+            ], [
+                'method' => $saleOrderEl['payment']['method'],
+                'amount_payable' => $saleOrderEl['payment']['amount_ordered'],
+                'amount_paid' => ((array_key_exists('amount_paid', $saleOrderEl['payment'])) ? $saleOrderEl['payment']['amount_paid'] : null),
+                'cc_last4' => ((array_key_exists('cc_last4', $saleOrderEl['payment'])) ? $saleOrderEl['payment']['cc_last4'] : null),
+                'cc_start_month' => ((array_key_exists('cc_ss_start_month', $saleOrderEl['payment'])) ? $saleOrderEl['payment']['cc_ss_start_month'] : null),
+                'cc_start_year' => ((array_key_exists('cc_ss_start_year', $saleOrderEl['payment'])) ? $saleOrderEl['payment']['cc_ss_start_year'] : null),
+                'cc_exp_year' => ((array_key_exists('cc_exp_year', $saleOrderEl['payment'])) ? $saleOrderEl['payment']['cc_exp_year'] : null),
+                'shipping_amount' => $saleOrderEl['payment']['shipping_amount'],
+                'shipping_captured' => ((array_key_exists('shipping_captured', $saleOrderEl['payment'])) ? $saleOrderEl['payment']['shipping_captured'] : null),
+                'extra_info' => json_encode($saleOrderEl['extension_attributes']['payment_additional_info']),
+                'is_active' => 1
+            ]);
+
+            if(is_array($saleOrderEl['status_histories']) && (count($saleOrderEl['status_histories']) > 0)) {
+                foreach ($saleOrderEl['status_histories'] as $historyEl) {
+                    $statusHistoryObj = SaleOrderStatusHistory::firstOrCreate([
+                        'order_id' => $order->id,
+                        'history_id' => $historyEl['entity_id'],
+                        'sale_order_id' => $order->order_id,
+                    ], [
+                        'name' => $historyEl['entity_name'],
+                        'status' => $historyEl['status'],
+                        'comments' => $historyEl['comment'],
+                        'status_created_at' => $historyEl['created_at'],
+                        'customer_notified' => $historyEl['is_customer_notified'],
+                        'visible_on_front' => $historyEl['is_visible_on_front'],
+                        'is_active' => 1
+                    ]);
+                }
+            }
+
+            $saleOrderProcessHistoryAssigner = (new SaleOrderProcessHistory())->create([
+                'order_id' => $order->id,
+                'action' => SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKUP_ASSIGN,
+                'status' => 1,
+                'comments' => 'The Sale Order Id #' . $order->order_id . ' is assigned for pickup.',
+                'extra_info' => null,
+                'done_by' => ($supervisorId !== 0) ? $supervisorId : null,
+                'done_at' => date('Y-m-d H:i:s'),
+            ]);
+            $saleOrderProcessHistoryAssigned = (new SaleOrderProcessHistory())->create([
+                'order_id' => $order->id,
+                'action' => SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_PICKUP,
+                'status' => 1,
+                'comments' => 'The Sale Order Id #' . $order->order_id . ' is assigned for pickup.',
+                'extra_info' => null,
+                'done_by' => $pickerId,
+                'done_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            return [
+                'status' => true,
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+
+    }
+
+    public function assignOrderToDriver(SaleOrder $order = null, $driverId = 0, $supervisorId = 0) {
+
+        if (is_null($order)) {
+            return [
+                'status' => false,
+                'message' => 'Sale Order is empty!'
+            ];
+        }
+
+        try {
+
+            $saleOrderProcessHistoryAssigner = (new SaleOrderProcessHistory())->create([
+                'order_id' => $order->id,
+                'action' => SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERY_ASSIGN,
+                'status' => 1,
+                'comments' => 'The Sale Order Id #' . $order->order_id . ' is assigned for delivery.',
+                'extra_info' => null,
+                'done_by' => ($supervisorId !== 0) ? $supervisorId : null,
+                'done_at' => date('Y-m-d H:i:s'),
+            ]);
+            $saleOrderProcessHistoryAssigned = (new SaleOrderProcessHistory())->create([
+                'order_id' => $order->id,
+                'action' => SaleOrderProcessHistory::SALE_ORDER_PROCESS_ACTION_DELIVERY,
+                'status' => 1,
+                'comments' => 'The Sale Order Id #' . $order->order_id . ' is assigned for delivery.',
+                'extra_info' => null,
+                'done_by' => $driverId,
+                'done_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            return [
+                'status' => true,
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+
     }
 
 }

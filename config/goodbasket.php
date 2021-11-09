@@ -144,6 +144,7 @@ return [
 
     'role_allowed_statuses' => [
         'supervisor' => [
+            'pending',
             'processing',
             'being_prepared',
             'holded',
@@ -152,14 +153,11 @@ return [
             'delivered',
         ],
         'picker' => [
-            'processing',
             'being_prepared',
-            'holded',
         ],
         'driver' => [
             'ready_to_dispatch',
             'out_for_delivery',
-            'delivered',
         ],
     ],
 

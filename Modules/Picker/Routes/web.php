@@ -22,10 +22,12 @@ Route::prefix('picker')->middleware([
         ->name('picker.index');
     Route::get('/dashboard', 'PickerController@dashboard')
         ->name('picker.dashboard');
-    Route::get('/order-view/{orderId}', 'PickerController@viewOrder')
-        ->name('picker.viewOrder');
     Route::post('/find-order', 'PickerController@searchOrderByIncrementId')
         ->name('picker.searchOrderByIncrementId');
     Route::post('/filter-order', 'PickerController@searchOrderByFilters')
         ->name('picker.searchOrderByFilters');
+    Route::get('/order-view/{orderId}', 'PickerController@viewOrder')
+        ->name('picker.viewOrder');
+    Route::post('/order-status-change/{orderId}', 'PickerController@orderStatusChange')
+        ->name('picker.orderStatusChange');
 });
