@@ -185,21 +185,21 @@ class AuthUserPermissionResolver
 
         if (count($permissionIds) > 0) {
 
-            $permittedInactiveArray = PermissionMap::whereIn('permission_id', $permissionIds)
+            $permittedMapArray = PermissionMap::whereIn('permission_id', $permissionIds)
                 ->where('role_id', $currentRoleId)
-                ->where('is_active', '1')
                 ->get();
-            if (is_null($permittedInactiveArray) || (count($permittedInactiveArray) == 0)) {
-                return true;
-            }
 
-            $permittedArray = PermissionMap::whereIn('permission_id', $permissionIds)
-                ->where('role_id', $currentRoleId)
-                ->where('permitted', '1')
-                ->get();
-            if (is_null($permittedArray) || (count($permittedArray) == 0)) {
+            if (is_null($permittedMapArray) || (count($permittedMapArray) == 0)) {
                 return false;
             }
+
+            foreach ($permittedMapArray as $permittedMapEl) {
+                if (($permittedMapEl->is_active == '1') && ($permittedMapEl->permitted == '0')) {
+                    return false;
+                }
+            }
+
+            return true;
 
         }
 

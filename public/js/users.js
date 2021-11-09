@@ -40,11 +40,13 @@ var UsersCustomJsBlocks = function() {
         newPage: function(hostUrl) {
             showHidePasswordFn('#user_password_form_group');
             showHidePasswordFn('#user_password_conf_form_group');
+            let dpImage = new KTImageInput('profile_avatar_area');
             jQuery('button#new_user_cancel_btn').on('click', function(e) {
                 window.location = hostUrl + '/userauth/users';
             });
         },
         editPage: function(hostUrl) {
+            let dpImage = new KTImageInput('profile_avatar_area');
             jQuery('button#edit_user_cancel_btn').on('click', function(e) {
                 window.location = hostUrl + '/userauth/users';
             });

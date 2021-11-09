@@ -13,7 +13,8 @@
         "laravel/tinker": "^2.5",
         "laravel/ui": "^3.3",
         "nwidart/laravel-modules": "^8.2",
-        "pragmarx/countries-laravel": "^0.7.0"
+        "pragmarx/countries-laravel": "^0.7.0",
+        "spipu/html2pdf": "^5.2"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

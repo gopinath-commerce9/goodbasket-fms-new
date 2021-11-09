@@ -28,6 +28,8 @@ class BlockInvalidUserMiddleware
     public function handle(Request $request, Closure $next, $guard = null)
     {
 
+        $response = $next($request);
+
         switch($guard){
             case 'auth-user':
                 if (!Auth::guard($guard)->check()) {
@@ -38,10 +40,10 @@ class BlockInvalidUserMiddleware
                 }
                 break;
             default:
-                $next($request);
+                return $response;
                 break;
         }
 
-        return $next($request);
+        return $response;
     }
 }
