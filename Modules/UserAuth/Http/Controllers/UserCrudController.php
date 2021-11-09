@@ -13,6 +13,7 @@ use Modules\UserRole\Entities\UserRoleMap;
 use Redirect;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use Modules\UserAuth\Entities\UserServiceHelper;
 
 class UserCrudController extends Controller
 {
@@ -29,11 +30,14 @@ class UserCrudController extends Controller
         $userList = User::all();
         $usersTotal = $userList->count();
 
+        $serviceHelper = new UserServiceHelper();
+
         return view('userauth::users.list', compact(
             'pageTitle',
             'pageSubTitle',
             'userList',
-            'usersTotal'
+            'usersTotal',
+            'serviceHelper'
         ));
 
     }
@@ -48,9 +52,14 @@ class UserCrudController extends Controller
         $pageTitle = 'Fulfillment Center';
         $pageSubTitle = 'New User';
 
+        $userRoles = UserRole::all();
+        $serviceHelper = new UserServiceHelper();
+
         return view('userauth::users.new', compact(
             'pageTitle',
-            'pageSubTitle'
+            'pageSubTitle',
+            'userRoles',
+            'serviceHelper'
         ));
 
     }
@@ -73,6 +82,10 @@ class UserCrudController extends Controller
                 'max:255',
                 'unique:users,email'
             ],
+            'user_contact' => ['nullable', 'regex:/^([0-9\s\-\+\(\)]*)$/', 'min:10'],
+            'profile_avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:200'],
+            'profile_avatar_remove' => ['nullable', 'boolean'],
+            'user_role' => ['nullable', 'numeric', 'integer', 'exists:user_roles,id'],
             'user_password' => [
                 'required',
                 'confirmed',
@@ -94,18 +107,63 @@ class UserCrudController extends Controller
         if ($validator->fails()) {
             return back()
                 ->withErrors($validator)
-                ->withInput($request->only('user_name', 'user_email', 'user_password', 'user_password_confirmation'));
+                ->withInput($request->only('user_name', 'user_email', 'user_contact', 'user_password', 'user_password_confirmation'));
         }
 
         $postData = $validator->validated();
+
+        $givenUserRole = null;
+        $roleAssiged = false;
+        if (array_key_exists('user_role', $postData)) {
+            $roleAssiged = true;
+            if (!is_null($postData['user_role'])) {
+                $givenUserRole = UserRole::find($postData['user_role']);
+                if(!$givenUserRole) {
+                    return back()
+                        ->with('error', 'The User Role does not exist!')
+                        ->withInput($request->only('user_name'));
+                }
+            }
+        }
 
         try {
 
             $newUser = new User();
             $newUser->name = trim($postData['user_name']);
             $newUser->email = trim($postData['user_email']);
+            $newUser->contact_number = trim($postData['user_contact']);
             $newUser->password = Hash::make($postData['user_password']);
             $newUser->saveQuietly();
+
+            if($request->hasFile('profile_avatar')){
+
+                $uploadFileObj = $request->file('profile_avatar');
+                $givenFileName = $uploadFileObj->getClientOriginalName();
+                $givenFileNameExt = $uploadFileObj->extension();
+                $proposedFileName = 'userAvatar_' . $newUser->id. '_' . date('YndHis') . '.' . $givenFileNameExt;
+                $uploadPath = $uploadFileObj->storeAs('media/images/users', $proposedFileName, 'public');
+                if ($uploadPath) {
+                    $newUser->profile_picture = json_encode([
+                        'name' => $givenFileName,
+                        'ext' => $givenFileNameExt,
+                        'path' => $proposedFileName
+                    ]);
+                    $newUser->saveQuietly();
+                }
+
+            }
+
+            if ($roleAssiged) {
+                if (is_null($givenUserRole)) {
+                    UserRoleMap::where('user_id', $newUser->id)
+                        ->delete();
+                } else {
+                    $newRoleMap = UserRoleMap::updateOrCreate(
+                        ['user_id' => $newUser->id],
+                        ['role_id' => $givenUserRole->id, 'is_active' => 1]
+                    );
+                }
+            }
 
             return redirect()->route('users.index')->with('success', 'The User is added successfully!');
 
@@ -166,6 +224,7 @@ class UserCrudController extends Controller
         }
 
         $userRoles = UserRole::all();
+        $serviceHelper = new UserServiceHelper();
 
         $pageTitle = 'Fulfillment Center';
         $pageSubTitle = 'Edit User #' . $givenUserData->email;
@@ -174,7 +233,8 @@ class UserCrudController extends Controller
             'pageTitle',
             'pageSubTitle',
             'givenUserData',
-            'userRoles'
+            'userRoles',
+            'serviceHelper'
         ));
 
     }
@@ -202,6 +262,9 @@ class UserCrudController extends Controller
 
         $validator = Validator::make($request->all() , [
             'user_name' => ['required', 'string', 'min:3', 'max:255'],
+            'user_contact' => ['nullable', 'regex:/^([0-9\s\-\+\(\)]*)$/', 'min:10'],
+            'profile_avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:200'],
+            'profile_avatar_remove' => ['nullable', 'boolean'],
             'user_role' => ['nullable', 'numeric', 'integer', 'exists:user_roles,id'],
         ], [
             'user_name.required' => 'The User Name should be provided.',
@@ -209,6 +272,7 @@ class UserCrudController extends Controller
             'user_name.min' => 'The User Name should be minimum :min characters.',
             'user_name.max' => 'The User Name should not exceed :max characters.',
         ]);
+
 
         if ($validator->fails()) {
             return back()
@@ -232,7 +296,7 @@ class UserCrudController extends Controller
             }
         }
 
-        if ($givenUserData->isDefaultUser() && $roleAssiged && (is_null($givenUserRole) || ($givenUserRole->code != UserRole::ADMIN_ROLE))) {
+        if ($givenUserData->isDefaultUser() && $roleAssiged && (is_null($givenUserRole) || ($givenUserRole->code != UserRole::USER_ROLE_ADMIN))) {
             return back()
                 ->with('error', "The Role of the default User '". $givenUserData->email . " 'cannot be changed!")
                 ->withInput($request->only('user_name'));
@@ -240,7 +304,41 @@ class UserCrudController extends Controller
 
         try {
 
+            $serviceHelper = new UserServiceHelper();
+
             $givenUserData->name = trim($postData['user_name']);
+            $givenUserData->contact_number = trim($postData['user_contact']);
+
+            $profileData = null;
+            if (!is_null($givenUserData->profile_picture) && ($givenUserData->profile_picture != '')) {
+                $profileData = json_decode($givenUserData->profile_picture, true);
+            }
+
+            if (!is_null($postData['profile_avatar_remove']) && ($postData['profile_avatar_remove'] == '1')) {
+                $profilePicUrl = (!is_null($profileData)) ? $profileData['path'] : '';
+                $serviceHelper->deleteUserImage($profilePicUrl);
+                $givenUserData->profile_picture = null;
+            }
+            if($request->hasFile('profile_avatar')){
+
+                $profilePicUrl = (!is_null($profileData)) ? $profileData['path'] : '';
+                $serviceHelper->deleteUserImage($profilePicUrl);
+
+                $uploadFileObj = $request->file('profile_avatar');
+                $givenFileName = $uploadFileObj->getClientOriginalName();
+                $givenFileNameExt = $uploadFileObj->extension();
+                $proposedFileName = 'userAvatar_' . $givenUserData->id. '_' . date('YndHis') . '.' . $givenFileNameExt;
+                $uploadPath = $uploadFileObj->storeAs('media/images/users', $proposedFileName, 'public');
+                if ($uploadPath) {
+                    $givenUserData->profile_picture = json_encode([
+                        'name' => $givenFileName,
+                        'ext' => $givenFileNameExt,
+                        'path' => $proposedFileName
+                    ]);
+                }
+
+            }
+
             $givenUserData->saveQuietly();
 
             if ($roleAssiged) {

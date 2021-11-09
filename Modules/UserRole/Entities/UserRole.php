@@ -10,7 +10,11 @@ class UserRole extends Model
 {
     use HasFactory;
 
-    const ADMIN_ROLE = 'admin';
+    const USER_ROLE_ADMIN = 'admin';
+    const USER_ROLE_SUPERVISOR = 'supervisor';
+    const USER_ROLE_PICKER = 'picker';
+    const USER_ROLE_DRIVER = 'driver';
+    const USER_ROLE_UNASSIGNED = null;
 
     /**
      * The attributes that are mass assignable.
@@ -82,9 +86,113 @@ class UserRole extends Model
      * @return bool
      */
     public function isAdmin() {
-        return ($this->code === self::ADMIN_ROLE)
+        return ($this->code === self::USER_ROLE_ADMIN)
             ? true
             : false;
+    }
+
+    /**
+     * Checks whether the Role is Supervisor.
+     * @return bool
+     */
+    public function isSupervisor() {
+        return ($this->code === self::USER_ROLE_SUPERVISOR)
+            ? true
+            : false;
+    }
+
+    /**
+     * Checks whether the Role is Picker.
+     * @return bool
+     */
+    public function isPicker() {
+        return ($this->code === self::USER_ROLE_PICKER)
+            ? true
+            : false;
+    }
+
+    /**
+     * Checks whether the Role is Driver.
+     * @return bool
+     */
+    public function isDriver() {
+        return ($this->code === self::USER_ROLE_DRIVER)
+            ? true
+            : false;
+    }
+
+    /**
+     * Checks whether the Role is Un-Assigned.
+     * @return bool
+     */
+    public function isUnassigned() {
+        return ($this->code === self::USER_ROLE_UNASSIGNED)
+            ? true
+            : false;
+    }
+
+    /**
+     * Fetches all the Users with the UserRole 'Admin'
+     *
+     * @return \Modules\UserRole\Entities\UserRole|null
+     */
+    public function allAdmins() {
+        $adminObj = self::where('code', self::USER_ROLE_ADMIN)->get();
+        if (is_null($adminObj)) {
+            return null;
+        } else {
+            $adminRole = $adminObj->first();
+            $adminRole->mappedUsers;
+            return $adminRole;
+        }
+    }
+
+    /**
+     * Fetches all the Users with the UserRole 'Supervisor'
+     *
+     * @return \Modules\UserRole\Entities\UserRole|null
+     */
+    public function allSupervisors() {
+        $supervisorObj = self::where('code', self::USER_ROLE_SUPERVISOR)->get();
+        if (is_null($supervisorObj)) {
+            return null;
+        } else {
+            $supervisorRole = $supervisorObj->first();
+            $supervisorRole->mappedUsers;
+            return $supervisorRole;
+        }
+    }
+
+    /**
+     * Fetches all the Users with the UserRole 'Picker'
+     *
+     * @return \Modules\UserRole\Entities\UserRole|null
+     */
+    public function allPickers() {
+        $pickerObj = self::where('code', self::USER_ROLE_PICKER)->get();
+        if (is_null($pickerObj)) {
+            return null;
+        } else {
+            $pickerRole = $pickerObj->first();
+            $pickerRole->mappedUsers;
+            return $pickerRole;
+        }
+    }
+
+    /**
+     * Fetches all the Users with the UserRole 'Driver'
+     *
+     * @return \Modules\UserRole\Entities\UserRole|null
+     */
+    public function allDrivers() {
+        $driverObj = self::where('code', self::USER_ROLE_DRIVER)->get();
+        if (is_null($driverObj)) {
+            return null;
+        } else {
+            $driverRole = $driverObj->first();
+            $driverRole->mappedUsers;
+            return $driverRole;
+        }
     }
 
 }

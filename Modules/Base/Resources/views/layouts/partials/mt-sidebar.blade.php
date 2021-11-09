@@ -17,8 +17,26 @@
         <ul class="nav flex-column">
 
             <?php
-                $menuConfig = config('menuitems');
                 $currentMenuUrl = '/' . Request::path();
+                $dashboardUrl = '/dashboard';
+                $currentRole = null;
+                if (session()->has('authUserData')) {
+                    $sessionUser = session('authUserData');
+                    $currentRole = $sessionUser['roleCode'];
+                }
+                if (!is_null($currentRole) && \Illuminate\Support\Facades\Route::has($currentRole . '.dashboard')) {
+                    $dashboardUrl = '/' . $currentRole . '/dashboard';
+                }
+            ?>
+
+            <li class="nav-item mb-5" data-toggle="tooltip" data-placement="right" data-container="body" data-boundary="window" title="Dashboard">
+                <a href="{{ url($dashboardUrl) }}" class="nav-link btn btn-icon btn-clean btn-icon-white btn-lg <?php if($currentMenuUrl == $dashboardUrl){?> active <?php } ?>">
+                    <i class="flaticon2-protection icon-lg"></i>
+                </a>
+            </li>
+
+            <?php
+                $menuConfig = config('menuitems');
                 if (isset($menuConfig) && !is_null($menuConfig) && is_array($menuConfig) && (count($menuConfig) > 0) && array_key_exists('items', $menuConfig)) {
                     $menuList = $menuConfig['items'];
                     if (is_array($menuList) && (count($menuList) > 0)) {

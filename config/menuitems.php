@@ -4,16 +4,6 @@ return [
 
     'items' => [
         [
-            'name' => 'Dashboard',
-            'path' => '/dashboard',
-            'icon' => 'flaticon2-protection',
-            'customIcon' => false,
-            'toolTip' => 'Dashboard',
-            'permission' => null,
-            'active' => true,
-            'children' => null,
-        ],
-        [
             'name' => 'Users',
             'path' => '/userauth/users',
             'icon' => 'fas fa-user-friends',

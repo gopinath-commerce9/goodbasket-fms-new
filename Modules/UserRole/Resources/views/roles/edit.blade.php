@@ -138,10 +138,10 @@
                                                         <select class="form-control"
                                                                 id="permission_map_active_{{ $givenUserRole->id }}_{{ $userPermissionEl->id }}"
                                                                 name="permission_map[{{ $userPermissionEl->id }}][active]" >
-                                                            <option value="0" {{ (!$filteredUserPermission || ($filteredUserPermission && ($filteredUserPermission['pivot']['is_active'] == 0))) ? "selected" : "" }}>
-                                                                Inactive
+                                                            <option value="1" {{ (!$filteredUserPermission || ($filteredUserPermission && ($filteredUserPermission['pivot']['is_active'] == 1))) ? "selected" : "" }}>
+                                                                Active
                                                             </option>
-                                                            <option value="1" {{ ($filteredUserPermission && ($filteredUserPermission['pivot']['is_active'] == 1)) ? "selected" : "" }}>Active</option>
+                                                            <option value="0" {{ ($filteredUserPermission && ($filteredUserPermission['pivot']['is_active'] == 0)) ? "selected" : "" }}>Inactive</option>
                                                         </select>
                                                     @endif
                                                 </td>

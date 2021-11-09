@@ -33,7 +33,7 @@
                 <!--end::Card Header-->
 
                 <!--begin::Form-->
-                <form class="form" id="user_new_form" action="{{ url('/userauth/users/store') }}" method="post">
+                <form class="form" id="user_new_form" action="{{ url('/userauth/users/store') }}" method="POST" enctype="multipart/form-data">
 
                     @csrf
 
@@ -55,6 +55,53 @@
                                 <span class="form-text text-muted">Please enter the user e-mail.</span>
                             </div>
                         </div>
+
+                        <div class="form-group row">
+                            <label  class="col-3 col-form-label text-right">Contact</label>
+                            <div class="col-6">
+                                <input type="text" class="form-control" id="user_contact" name="user_contact" placeholder="Enter User Contact Number" value="{{ old('user_contact') }}"/>
+                                <span class="form-text text-muted">Please enter the contact number of the user.</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-form-label col-lg-3 col-sm-12 text-lg-right">Avatar</label>
+                            <div class="col-lg-9 col-xl-6">
+
+                                <div class="image-input image-input-outline" id="profile_avatar_area" style="background-image: url({{ $serviceHelper->getUserImageUrl('blank.png') }})">
+                                    <div class="image-input-wrapper" style="background-image: url({{ $serviceHelper->getUserImageUrl('users/blank.png') }})"></div>
+                                    <label class="btn btn-xs btn-icon btn-circle btn-white btn-hover-text-primary btn-shadow" data-action="change" data-toggle="tooltip" title="" data-original-title="Change avatar">
+                                        <i class="fa fa-pen icon-sm text-muted"></i>
+                                        <input type="file" name="profile_avatar" id="profile_avatar" accept=".png, .jpg, .jpeg" />
+                                        <input type="hidden" name="profile_avatar_remove" />
+                                    </label>
+                                    <span class="btn btn-xs btn-icon btn-circle btn-white btn-hover-text-primary btn-shadow" data-action="cancel" data-toggle="tooltip" title="Cancel avatar">
+                                        <i class="ki ki-bold-close icon-xs text-muted"></i>
+                                    </span>
+                                    <span class="btn btn-xs btn-icon btn-circle btn-white btn-hover-text-primary btn-shadow" data-action="remove" data-toggle="tooltip" title="Remove avatar">
+                                        <i class="ki ki-bold-close icon-xs text-muted"></i>
+                                    </span>
+                                </div>
+                                <span class="form-text text-muted">Allowed file types: png, jpg, jpeg. Allowed size: not more than 200KB.</span>
+                            </div>
+                        </div>
+
+                        @if(\Modules\UserRole\Http\Middleware\AuthUserPermissionResolver::permitted('user-roles.assign'))
+                            <div class="form-group row">
+                                <label  class="col-3 col-form-label text-right">Role</label>
+                                <?php $mappedUserRole = null; ?>
+                                <div class="col-6">
+                                    <select class="form-control" id="user_role" name="user_role" >
+                                        <option value="" selected>Not Assigned</option>
+                                        @foreach($userRoles as $userRoleEl)
+                                            <option value="{{ $userRoleEl->id }}">
+                                                {{ $userRoleEl->display_name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                        @endif
 
                         <div class="form-group row">
                             <label  class="col-3 col-form-label text-right">Password<span class="text-danger">*</span></label>

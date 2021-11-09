@@ -129,6 +129,10 @@
                                     </div>
                                 @endif
 
+                                <div class="custom_alert_trigger_messages_area">
+
+                                </div>
+
                                 @yield('content')
 
                             </div>

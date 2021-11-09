@@ -5,6 +5,7 @@ namespace Modules\UserAuth\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Route;
 use Redirect;
 use Auth;
 use Input;
@@ -86,12 +87,18 @@ class UserAuthController extends Controller
         ], false)) {
 
             $authUserData = Auth::guard('auth-user')->user()->toArray();
+            $profileData = null;
+            if (!is_null($authUserData['profile_picture']) && ($authUserData['profile_picture'] != '')) {
+                $profileData = json_decode($authUserData['profile_picture'], true);
+            }
             $userDetails = [
                 'id' => $authUserData['id'],
                 'name' => $authUserData['name'],
                 'email' => $authUserData['email'],
                 'roleId' => null,
                 'roleCode' => null,
+                'roleName' => null,
+                'userImage' => (!is_null($profileData)) ? $profileData['path'] : ''
             ];
             $roleMapData = UserRoleMap::firstWhere('user_id', $authUserData['id']);
             if ($roleMapData) {
@@ -100,11 +107,17 @@ class UserAuthController extends Controller
                 if ($roleData) {
                     $userDetails['roleId'] = $roleData->id;
                     $userDetails['roleCode'] = $roleData->code;
+                    $userDetails['roleName'] = $roleData->display_name;
                 }
             }
             $request->session()->put('authUserData', $userDetails);
 
-            return redirect()->intended(route($this->redirectRoute));
+            if (!is_null($userDetails['roleCode']) &&  Route::has($userDetails['roleCode'] . '.index')) {
+                return redirect()->intended(route($userDetails['roleCode'] . '.index'));
+            } else {
+                return redirect()->intended(route($this->redirectRoute));
+            }
+
         }
 
         return back()
