@@ -12,5 +12,12 @@
 */
 
 Route::prefix('sales')->group(function() {
-    Route::get('/', 'SalesController@index');
+    Route::get('/', 'SalesController@index')
+        ->name('sales.index');
+    Route::get('/orders', 'SalesController@ordersList')
+        ->name('sales.ordersList');
+    Route::post('/find-order', 'SalesController@searchOrderByIncrementId')
+        ->name('sales.searchOrderByIncrementId');
+    Route::post('/filter-order', 'SalesController@searchOrderByFilters')
+        ->name('sales.searchOrderByFilters');
 });
