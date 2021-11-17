@@ -143,6 +143,8 @@
                     </div>
                     <!--end::Content-->
 
+                    @yield('content-before-footer')
+
                     <!--begin::Footer-->
                     @include('base::layouts.partials.mt-footer')
                     <!--end::Footer-->

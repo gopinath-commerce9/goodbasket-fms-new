@@ -102,6 +102,180 @@ var SalesCustomJsBlocks = function() {
 
     };
 
+    var posHideOnlinePayment = function (orderSource) {
+        if(orderSource == 'ELGROCER') {
+            $("#paymentMethod").append(new Option("Online Payment Method", "saleschannel"));
+        } else {
+            $("#paymentMethod option[value='saleschannel']").remove();
+        }
+        if(orderSource == 'INSTORE') {
+            $('#order_source_id_div').hide();
+            posFillForm();
+        } else {
+            $('#order_source_id_div').show();
+            $("form#order-form")[0].reset();
+            $('#channel-Id').val("ELGROCER");
+            $('.customer_info').show();
+            $('#email').val("elgrocer@goodbasket.com");
+        }
+    };
+
+    var posApplyServiceCharge = function (source, sourceList) {
+        if(source) {
+            var sourcedtls =  sourceList[source];
+            $.each(sourcedtls, function(key, value){
+                if(key == 'charge') {
+                    $('#service_charge').val(value);
+                    $('#sc-span').html('AED'+value);
+                    posCalculateTotal();
+                }
+            });
+        } else {
+            $('#service_charge').val('0.00');
+            $('#sc-span').html('AED0.00');
+            posCalculateTotal();
+        }
+    };
+
+    var posFetchAreas = function (emirate, areaList) {
+        let dropdown = $('#city');
+        dropdown.empty();
+        dropdown.append('<option selected="true" disabled>Choose Area</option>');
+        dropdown.prop('selectedIndex', 0);
+        var areas = areaList[emirate]
+        $.each(areas, function(key, value){
+            dropdown.append($('<option></option>').attr('value', value.area_code).text(value.area_name));
+        });
+        $('select[name=city] option:eq(1)').attr('selected', 'selected');
+    };
+
+    var posClearCart = function () {
+        $('#cart-item').html('<div class="example-preview mb-5"><div class="spinner spinner-track spinner-success mr-15">&nbsp;</div></div>');
+        var targetForm = $('form#barcode-form');
+        var formDataArray = targetForm.serializeArray();
+        var tokenValue = '';
+        jQuery.each(formDataArray, function(i, field){
+            if (field.name == '_token') {
+                tokenValue = field.value;
+            }
+        });
+        $.ajax({
+            url: targetForm.attr('action'),
+            type: targetForm.attr('method'),
+            data: { action:'clearcart', _token: tokenValue },
+            success: function (response) {
+                $('#spinner').css('display','none');
+                $('#cart-item').html(response.html);
+                //calculateTotal();
+                $('#subtotal-span').html('AED0.00');
+                $('#discount-span').html('AED0.00');
+                $('#sc-span').html('AED0.00');
+                $('#total-span').html('<strong>AED0.00</strong>');
+                $('#create_btn').prop('disabled', true);
+            }
+        });
+    };
+
+    var posFillForm = function () {
+        $('.customer_info').hide();
+        $('#firstname').val("InStore");
+        $('#lastname').val("InStore");
+        $('#email').val("instore@goodbasket.com");
+        $('#telephone').val("+97155555555");
+        $('#street').val("In Store");
+        $('#delivery_time_slot').val("10:00 AM - 2:00 PM");
+    };
+
+    var posCalculateTotal = function () {
+        //var disamt = $('#discount').val();
+        $('#discount-span').html('AED' + $('#discount').val());
+        if($('#subtotal').val() != undefined) {
+            var subTotal = parseFloat($('#subtotal').val());
+            var serviceCharge = parseFloat($('#service_charge').val());
+            var totalAmount = subTotal + serviceCharge;
+            if($('#discount').val() && $('#discount').val() != 0) {
+                totalAmount = totalAmount - parseFloat($('#discount').val());
+            } else {
+                $('#discount-span').html('AED0.00');
+            }
+            $('#subtotal-span').html('AED' + subTotal.toFixed(2));
+            $('#total-span').html('<strong>AED' + totalAmount.toFixed(2)+'</strong>');
+            if($('#subtotal').val() <= 0) {
+                $('#create_btn').prop('disabled', true);
+            } else {
+                $('#create_btn').prop('disabled', false);
+            }
+        } else {
+            $('#discount-span').html('AED0.00');
+        }
+    };
+
+    var posRemoveItem = function (item) {
+        $('#cart-item').html('<div class="example-preview mb-5"><div class="spinner spinner-track spinner-success mr-15">&nbsp;</div></div>');
+        var targetForm = $('form#barcode-form');
+        var formDataArray = targetForm.serializeArray();
+        var tokenValue = '';
+        jQuery.each(formDataArray, function(i, field){
+            if (field.name == '_token') {
+                tokenValue = field.value;
+            }
+        });
+        $.ajax({
+            url: targetForm.attr('action'),
+            type: targetForm.attr('method'),
+            data : { item: item, action: 'removeitem', _token: tokenValue },
+            success : function(response) {
+                $('#cart-item').html(response.html);
+                //$('#subtotal-span').html('AED'+$('#subtotal').val());
+                posCalculateTotal();
+            }
+        });
+    };
+
+    var posReduceProduct = function (id, row) {
+        $('#quan_td_'+row).html('<div class="input-group-sm input-group"><div class="spinner spinner-track spinner-primary spinner-sm mr-15"></div></div>');
+        //$('#cart-item').html('<div class="example-preview mb-5"><div class="spinner spinner-track spinner-success mr-15">&nbsp;</div></div>');
+        var targetForm = $('form#barcode-form');
+        var formDataArray = targetForm.serializeArray();
+        var tokenValue = '';
+        jQuery.each(formDataArray, function(i, field){
+            if (field.name == '_token') {
+                tokenValue = field.value;
+            }
+        });
+        $.ajax({
+            url: targetForm.attr('action'),
+            type: targetForm.attr('method'),
+            data : { id: id, row: row, action: 'remove', _token: tokenValue },
+            success : function(response) {
+                $('#cart-item').html(response.html);
+                posCalculateTotal();
+            }
+        });
+    };
+
+    var posAddProduct = function (id, row) {
+        $('#quan_td_'+row).html('<div class="input-group-sm input-group"><div class="spinner spinner-track spinner-primary spinner-sm mr-15"></div></div>');
+        //$('#cart-item').html('<div class="example-preview mb-5"><div class="spinner spinner-track spinner-success mr-15">&nbsp;</div></div>');
+        var targetForm = $('form#barcode-form');
+        var formDataArray = targetForm.serializeArray();
+        var tokenValue = '';
+        jQuery.each(formDataArray, function(i, field){
+            if (field.name == '_token') {
+                tokenValue = field.value;
+            }
+        });
+        $.ajax({
+            url: targetForm.attr('action'),
+            type: targetForm.attr('method'),
+            data : { id: id, row: row, action: 'add', _token: tokenValue },
+            success : function(response) {
+                $('#cart-item').html(response.html);
+                posCalculateTotal();
+            }
+        });
+    };
+
     var showAlertMessage = function(message) {
         $("div.custom_alert_trigger_messages_area")
             .html('<div class="alert alert-custom alert-dark alert-light-dark fade show" role="alert">' +
@@ -119,6 +293,123 @@ var SalesCustomJsBlocks = function() {
         listPage: function(hostUrl){
             setDeliveryDateFilterDatePicker();
             initSaleOrderTable();
+        },
+        posPage: function(hostUrl, areaList, sourceList){
+
+            $('select#channel-Id').on('change', function (e) {
+                var currentSource = $(this).val();
+                posHideOnlinePayment(currentSource);
+                posApplyServiceCharge(currentSource, sourceList);
+            });
+
+            $('select#region').on('change', function (e) {
+                var currentRegion = $(this).val();
+                posFetchAreas(currentRegion, areaList);
+            });
+            $("#region option:contains('Dubai')").attr('selected', 'selected').trigger('change');
+
+            $('#barcode').keyup(function(){
+                var barCode = $(this).val();
+                if(barCode.length === 13){
+                    $('#cart-btn').click();
+                }
+            });
+
+            $("#cart-btn").on('click', function (e) {
+                $('#cart-btn').prop('disabled', true);
+                var btn = KTUtil.getById("cart-btn");
+                KTUtil.btnWait(btn, "spinner spinner-left spinner-white pl-15 disabled", "Adding...");
+                //$('#cart-item').html('<div class="example-preview mb-5"><div class="spinner spinner-track spinner-success mr-15">&nbsp;</div></div>');
+                e.preventDefault();
+                var targetForm = $('form#barcode-form');
+                $.ajax({
+                    url: targetForm.attr('action'),
+                    type: targetForm.attr('method'),
+                    data: targetForm.serialize(),
+                    success: function (response) {
+                        KTUtil.btnRelease(btn);
+                        $('#cart-btn').prop('disabled', false);
+                        $('#cart-btn').html("<i class='flaticon-shopping-basket icon-nm'></i> Add to Cart");
+                        $('#barcode').val('');
+                        $('#cart-item').html(response.html);
+                        //$('#subtotal-span').html('AED'+$('#subtotal').val());
+                        posCalculateTotal();
+                    }
+                });
+
+            });
+
+            $('a#clear-cart-btn').on('click', function (e) {
+                e.preventDefault();
+                posClearCart();
+            });
+
+            $(document).on('click', 'a.item-remove-btn', function (e) {
+                e.preventDefault();
+                var productId = $(this).data('product-id');
+                posRemoveItem(productId);
+            });
+
+            $(document).on('click', 'a.product-remove-btn', function (e) {
+                e.preventDefault();
+                var productId = $(this).data('product-id');
+                var productRow = $(this).data('row-index');
+                posReduceProduct(productId, productRow);
+            });
+
+            $(document).on('click', 'a.product-add-btn', function (e) {
+                e.preventDefault();
+                var productId = $(this).data('product-id');
+                var productRow = $(this).data('row-index');
+                posAddProduct(productId, productRow);
+            });
+
+            $('button#create_btn').on('click', function (e) {
+                var targetForm = $('form#order-form');
+                $('#create_btn').prop('disabled', true);
+                var btn = KTUtil.getById("create_btn");
+                KTUtil.btnWait(btn, "spinner spinner-left spinner-white pl-15 disabled", "Processing...");
+                e.preventDefault();
+                $.ajax({
+                    url: targetForm.attr('action'),
+                    type: targetForm.attr('method'),
+                    data: targetForm.serialize(),
+                    dataType: "json",
+                    success : function(response) {
+                        //$('#cart-btn').prop('disabled', true);
+                        KTUtil.btnRelease(btn);
+                        if(response.success === true){
+                            swal.fire({
+                                html: response.html,
+                                icon: "success",
+                                buttonsStyling: false,
+                                confirmButtonText: "Ok!",
+                                customClass: {
+                                    confirmButton: "btn font-weight-bold btn-light-primary"
+                                }
+                            }).then(function() {
+                                KTUtil.scrollTop();
+                                targetForm[0].reset();
+                                targetForm[0].reset();
+                                posClearCart();
+                            });
+                        } else {
+                            swal.fire({
+                                text: response.message,
+                                icon: "error",
+                                buttonsStyling: false,
+                                confirmButtonText: "Ok, got it!",
+                                customClass: {
+                                    confirmButton: "btn font-weight-bold btn-light-primary"
+                                }
+                            }).then(function() {
+                                KTUtil.scrollTop();
+                            });
+                        }
+                    }
+                });
+            });
+
         },
     };
 

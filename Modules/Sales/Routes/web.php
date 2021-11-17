@@ -20,4 +20,10 @@ Route::prefix('sales')->group(function() {
         ->name('sales.searchOrderByIncrementId');
     Route::post('/filter-order', 'SalesController@searchOrderByFilters')
         ->name('sales.searchOrderByFilters');
+    Route::get('/pos', 'SalesController@posView')
+        ->name('sales.pos');
+    Route::post('/pos/add-cart', 'SalesController@posAddCart')
+        ->name('sales.posAddCart');
+    Route::post('/pos/create-order', 'SalesController@posCreateOrder')
+        ->name('sales.posCreateOrder');
 });

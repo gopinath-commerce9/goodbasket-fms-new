@@ -108,9 +108,9 @@ return [
             'icon' => 'ktmt/media/pos_icon.png',
             'customIcon' => true,
             'toolTip' => 'POS System',
-            'permission_type' => null,
-            'permission' => null,
-            'active' => false,
+            'permission_type' => 'role',
+            'permission' => ['admin', 'cashier'],
+            'active' => true,
             'children' => null,
         ],
         [
