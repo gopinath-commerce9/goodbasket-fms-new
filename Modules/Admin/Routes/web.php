@@ -32,6 +32,8 @@ Route::prefix('admin')->middleware([
         ->name('admin.fetchChannelOrders');
     Route::post('/find-order', 'AdminController@searchOrderByIncrementId')
         ->name('admin.searchOrderByIncrementId');
+    Route::post('/filter-orders', 'AdminController@filterOrders')
+        ->name('admin.filterOrders');
     Route::get('/download-items-date-csv', 'AdminController@downloadItemsDateCsv')
         ->name('admin.downloadItemsDateCsv');
     Route::get('/download-items-schedule-csv', 'AdminController@downloadItemsScheduleCsv')

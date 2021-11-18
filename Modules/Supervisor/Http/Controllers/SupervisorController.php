@@ -51,10 +51,6 @@ class SupervisorController extends Controller
         $supervisorOrders = $serviceHelper->getSupervisorOrders();
         $regionOrderCount = (!is_null($supervisorOrders)) ? count($supervisorOrders) : 0;
 
-        $userRoleObj = new UserRole();
-        $pickers = $userRoleObj->allPickers();
-        $drivers = $userRoleObj->allDrivers();
-
         return view('supervisor::dashboard', compact(
             'pageTitle',
             'pageSubTitle',
@@ -66,9 +62,7 @@ class SupervisorController extends Controller
             'availableApiChannels',
             'availableStatuses',
             'deliveryTimeSlots',
-            'serviceHelper',
-            'pickers',
-            'drivers'
+            'serviceHelper'
         ));
 
     }
@@ -215,94 +209,6 @@ class SupervisorController extends Controller
         ];
 
         return response()->json($returnData, 200);
-
-    }
-
-    public function viewPicker($pickerId) {
-
-        if (is_null($pickerId) || !is_numeric($pickerId) || ((int)$pickerId <= 0)) {
-            return back()
-                ->with('error', 'The Picker Id input is invalid!');
-        }
-
-        $pickerObject = User::find($pickerId);
-        if (!$pickerObject) {
-            return back()
-                ->with('error', 'The Picker does not exist!');
-        }
-
-        if (is_null($pickerObject->mappedRole) || (count($pickerObject->mappedRole) == 0)) {
-            return back()
-                ->with('error', 'The given User is not a Picker!');
-        }
-
-        $mappedRole = $pickerObject->mappedRole[0];
-        if (!$mappedRole->isPicker()) {
-            return back()
-                ->with('error', 'The given User is not a Picker!');
-        }
-
-        $pageTitle = 'Fulfillment Center';
-        $pageSubTitle = 'Picker: ' . $pickerObject->name;
-        $givenUserData = $pickerObject;
-        $serviceHelper = new SupervisorServiceHelper();
-        $emirates = config('goodbasket.emirates');
-        $availableApiChannels = $serviceHelper->getAllAvailableChannels();
-        $availableStatuses = $serviceHelper->getSupervisorsAllowedStatuses();
-
-        return view('supervisor::picker-view', compact(
-            'pageTitle',
-            'pageSubTitle',
-            'givenUserData',
-            'serviceHelper',
-            'emirates',
-            'availableApiChannels',
-            'availableStatuses'
-        ));
-
-    }
-
-    public function viewDriver($driverId) {
-
-        if (is_null($driverId) || !is_numeric($driverId) || ((int)$driverId <= 0)) {
-            return back()
-                ->with('error', 'The Driver Id input is invalid!');
-        }
-
-        $driverObject = User::find($driverId);
-        if (!$driverObject) {
-            return back()
-                ->with('error', 'The Driver does not exist!');
-        }
-
-        if (is_null($driverObject->mappedRole) || (count($driverObject->mappedRole) == 0)) {
-            return back()
-                ->with('error', 'The given User is not a Driver!');
-        }
-
-        $mappedRole = $driverObject->mappedRole[0];
-        if (!$mappedRole->isDriver()) {
-            return back()
-                ->with('error', 'The given User is not a Driver!');
-        }
-
-        $pageTitle = 'Fulfillment Center';
-        $pageSubTitle = 'Driver: ' . $driverObject->name;
-        $givenUserData = $driverObject;
-        $serviceHelper = new SupervisorServiceHelper();
-        $emirates = config('goodbasket.emirates');
-        $availableApiChannels = $serviceHelper->getAllAvailableChannels();
-        $availableStatuses = $serviceHelper->getSupervisorsAllowedStatuses();
-
-        return view('supervisor::driver-view', compact(
-            'pageTitle',
-            'pageSubTitle',
-            'givenUserData',
-            'serviceHelper',
-            'emirates',
-            'availableApiChannels',
-            'availableStatuses'
-        ));
 
     }
 

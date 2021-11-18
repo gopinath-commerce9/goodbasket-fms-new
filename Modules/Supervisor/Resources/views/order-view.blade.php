@@ -13,7 +13,7 @@
                 <div class="card-header flex-wrap py-3">
                     <div class="card-toolbar">
                         <div class="col text-left">
-                            <a href="{{ url('/supervisor/dashboard') }}" class="btn btn-outline-primary">
+                            <a href="{{ url()->previous() }}" class="btn btn-outline-primary">
                                 <i class="flaticon2-back"></i> Back
                             </a>
                         </div>
@@ -152,10 +152,14 @@
                                         <span class="opacity-70"><?php
                                             $processHistoryIndex = 1;
                                             foreach ($saleOrderData['process_history'] as $processHistory) {
+                                                $actionDoer = 'AutoSync';
+                                                if (isset($processHistory['action_doer']) && isset($processHistory['action_doer']['name'])) {
+                                                    $actionDoer = trim($processHistory['action_doer']['name']);
+                                                }
                                                 echo $processHistoryIndex++ . ".) ";
                                                 echo "<b>" . ucwords(str_replace('_', ' ', trim($processHistory['action']))) . "</b>";
                                                 echo " By ";
-                                                echo "<b>" . trim($processHistory['action_doer']['name']) . "</b>";
+                                                echo "<b>" . $actionDoer . "</b>";
                                                 echo " on ";
                                                 echo "<b>" . $serviceHelper->getFormattedTime($processHistory['done_at'], 'F d, Y, h:i:s A') . "</b>";
                                                 echo "<br/>";
