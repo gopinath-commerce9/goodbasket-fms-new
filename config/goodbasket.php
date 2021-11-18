@@ -125,6 +125,7 @@ return [
         'complete' => 'Complete',
         'fraud' => 'Suspected Fraud',
         'holded' => 'On Hold',
+        'order_updated' => 'Order Updated',
         'out_for_delivery' => 'Out For Delivery',
         'ready_to_dispatch' => 'Ready To Dispatch',
         'payment_review'  => 'Payment Review',
@@ -148,6 +149,7 @@ return [
             'processing',
             'being_prepared',
             'holded',
+            'order_updated',
             'ready_to_dispatch',
             'out_for_delivery',
             'delivered',
@@ -193,6 +195,10 @@ return [
             ],
         ],
 
+    ],
+
+    'fulfillment' => [
+        'done_by' => 'Good Basket'
     ],
 
 ];
