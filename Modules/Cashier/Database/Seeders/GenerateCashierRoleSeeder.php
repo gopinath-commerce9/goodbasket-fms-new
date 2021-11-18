@@ -56,6 +56,7 @@ class GenerateCashierRoleSeeder extends Seeder
                     'is_active' => $roleEl['is_active']
                 ]);
             }
+            $this->command->info('Seeded the User Roles set in the Cashier Module!');
         }
 
     }

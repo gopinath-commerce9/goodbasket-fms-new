@@ -4,10 +4,6 @@ namespace Modules\UserRole\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
-use Modules\Cashier\Database\Seeders\GenerateCashierRoleSeeder;
-use Modules\Driver\Database\Seeders\GenerateDriverRoleSeeder;
-use Modules\Picker\Database\Seeders\GeneratePickerRoleSeeder;
-use Modules\Supervisor\Database\Seeders\GenerateSupervisorRoleSeeder;
 
 class UserRoleDatabaseSeeder extends Seeder
 {
@@ -20,24 +16,32 @@ class UserRoleDatabaseSeeder extends Seeder
     {
         Model::unguard();
 
-        // $this->call("OthersTableSeeder");
+        $seedersArray = [
+            UserRoleSeeder::class,
+            PermissionSeeder::class
+        ];
 
-        $this->call(UserRoleSeeder::class);
-        $this->command->info('Seeded the Default User Roles!');
+        $otherSeederList = $this->getOtherSeederClasses();
+        if (!is_null($otherSeederList) && is_array($otherSeederList) && (count($otherSeederList) > 0)) {
+            foreach ($otherSeederList as $seederClass) {
+                if (
+                    !is_null($seederClass)
+                    && is_string($seederClass)
+                    && (trim($seederClass) != '')
+                    && class_exists(trim($seederClass))
+                    && is_subclass_of(trim($seederClass), Seeder::class)
+                ) {
+                    $seedersArray[] = $seederClass;
+                }
+            }
+        }
 
-        $this->call(PermissionSeeder::class);
-        $this->command->info('Seeded the Default User Permissions!');
+        $this->call($seedersArray);
 
-        $this->call(GenerateSupervisorRoleSeeder::class);
-        $this->command->info('Seeded the User Roles set in the Supervisor Module!');
-
-        $this->call(GeneratePickerRoleSeeder::class);
-        $this->command->info('Seeded the User Roles set in the Picker Module!');
-
-        $this->call(GenerateDriverRoleSeeder::class);
-        $this->command->info('Seeded the User Roles set in the Driver Module!');
-
-        $this->call(GenerateCashierRoleSeeder::class);
-        $this->command->info('Seeded the User Roles set in the Cashier Module!');
     }
+
+    private function getOtherSeederClasses() {
+        return config('userroles.seeders');
+    }
+
 }

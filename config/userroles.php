@@ -56,4 +56,15 @@ return [
 
     ],
 
+    /*
+     * List of Database Migration Seeders to be run in the order.
+     *
+     */
+    'seeders' => [
+        \Modules\Supervisor\Database\Seeders\GenerateSupervisorRoleSeeder::class,
+        \Modules\Picker\Database\Seeders\GeneratePickerRoleSeeder::class,
+        \Modules\Driver\Database\Seeders\GenerateDriverRoleSeeder::class,
+        \Modules\Cashier\Database\Seeders\GenerateCashierRoleSeeder::class,
+    ],
+
 ];
