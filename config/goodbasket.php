@@ -161,4 +161,38 @@ return [
         ],
     ],
 
+    'delivery_time_slots' => [
+        '10:00 AM - 4:00 PM',
+        '4:00 PM - 10:00 PM',
+        '1:00 PM - 7:00 PM',
+    ],
+
+    'pos_system' => [
+
+        'order_sources' => [
+            'ELGROCER' => [
+                'code' => 'ELGROCER',
+                'source' => 'ELGROCER',
+                'charge' => '5.00'
+            ],
+            'INSTORE' => [
+                'code' => 'INSTORE',
+                'source' => 'In Store',
+                'charge' => '0.00'
+            ],
+        ],
+
+        'payment_methods' => [
+            'cashondelivery' => [
+                'method' => 'cashondelivery',
+                'title' => 'Cash On Delivery'
+            ],
+            'banktransfer' => [
+                'method' => 'banktransfer',
+                'title' => 'Credit Card On Delivery'
+            ],
+        ],
+
+    ],
+
 ];
