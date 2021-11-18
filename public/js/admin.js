@@ -331,6 +331,26 @@ var AdminCustomJsBlocks = function() {
             getSalesChartData(saleOrderSalesChart);
             getStatusChartData(saleOrderStatusChart);
             initAdminSaleOrderTable(saleOrderSalesChart, saleOrderStatusChart);
+            $('#fetch_api_orders_form').on('submit', function(e){
+                e.preventDefault();
+                var data = $(this).serialize();
+                $.ajax({
+                    url: $(this).attr('action'),
+                    data: data,
+                    method: 'POST',
+                    beforeSend: function() {
+                        KTApp.blockPage({
+                            overlayColor: '#000000',
+                            state: 'danger',
+                            message: 'Please wait...'
+                        });
+                    },
+                    success: function(data){
+                        KTApp.unblockPage();
+                        showAlertMessage(data.message);
+                    }
+                });
+            });
         },
         deliveryDetailsPage: function(hostUrl, orderIds, token) {
             $( document ).ready(function() {

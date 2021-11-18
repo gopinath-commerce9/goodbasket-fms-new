@@ -444,7 +444,9 @@ class SupervisorController extends Controller
             $data = file_get_contents($path);
             $logoEncoded = 'data:image/' . $type . ';base64,' . base64_encode($data);
 
-            $pdfContent = view('supervisor::print-label', compact('orderData', 'logoEncoded'))->render();
+            $fulfilledBy = config('goodbasket.fulfillment.done_by');
+
+            $pdfContent = view('supervisor::print-label', compact('orderData', 'logoEncoded', 'fulfilledBy'))->render();
 
             $pdfName = "print-label-order-" . $saleOrderObj->increment_id . ".pdf";
             $outputMode = 'D';
