@@ -221,6 +221,19 @@ class SalesServiceHelper
 
     }
 
+    public function getProductDataBySku($productSku = '') {
+
+        if (is_null($productSku) || (trim($productSku) == '')) {
+            return [];
+        }
+
+        $uri = $this->restApiService->getRestApiUrl() . 'products/' . trim($productSku);
+        $apiResult = $this->restApiService->processGetApi($uri);
+
+        return ($apiResult['status']) ? $apiResult['response'] : [];
+
+    }
+
     public function placePosOrder($orderData = [], $channelId = '', $placingUser = 0) {
 
         if (is_null($orderData) || !is_array($orderData) || (count($orderData) == 0)) {
@@ -718,6 +731,143 @@ class SalesServiceHelper
                 'message' => $e->getMessage()
             ];
         }
+
+    }
+
+    public function getOutOfStockItems($dayInterval = 3) {
+
+        $intervalClean =  (is_null($dayInterval) || !is_numeric($dayInterval) || ((int) trim($dayInterval) < 0))
+            ? (int)trim($dayInterval) : 3;
+
+        $uri = $this->restApiService->getRestApiUrl() . 'getoutofstockitems/' . $intervalClean;
+        $apiResult = $this->restApiService->processGetApi($uri);
+
+        return $apiResult;
+
+    }
+
+    public function getStockItemData($productSku = '') {
+
+        if (is_null($productSku) || (trim($productSku) == '')) {
+            return [ 'status' => false, 'message' => 'The product SKU should not be empty!' ];
+        }
+
+        $uri = $this->restApiService->getRestApiUrl() . 'stockItems/' . trim($productSku);
+        $apiResult = $this->restApiService->processGetApi($uri);
+
+        return $apiResult;
+
+    }
+
+    public function setProductOutOfStock($productSku = '', $itemId = '') {
+
+        if (is_null($productSku) || (trim($productSku) == '')) {
+            return [];
+        }
+
+        if (is_null($itemId) || (trim($itemId) == '')) {
+            return [];
+        }
+
+        $uri = $this->restApiService->getRestApiUrl() . 'products/' . trim($productSku) . '/stockItems/' . trim($itemId);
+        $params = [
+            'stockItem' => [
+                'is_in_stock' => false
+            ]
+        ];
+        $apiResult = $this->restApiService->processPutApi($uri, $params);
+
+        return $apiResult;
+
+    }
+
+    public function getSaleOrderItemsReport($region = '', $apiChannel = '', $status = [], $startDate = '', $endDate = '', $timeSlot = '') {
+
+        $orderRequest = SaleOrder::select('sale_orders.*', 'sale_order_items.product_id', 'sale_order_items.item_sku', 'sale_order_items.item_name', DB::raw('SUM(sale_order_items.qty_ordered) as total_qty'), DB::raw('SUM(sale_order_items.qty_returned) as total_return_qty'));
+
+        $emirates = config('goodbasket.emirates');
+        if (!is_null($region) && (trim($region) != '')) {
+            $orderRequest->where('region_code', trim($region));
+        } else {
+            $orderRequest->whereIn('region_code', array_keys($emirates));
+        }
+
+        $availableApiChannels = $this->getAllAvailableChannels();
+        if (!is_null($apiChannel) && (trim($apiChannel) != '')) {
+            $orderRequest->where('channel', trim($apiChannel));
+        } else {
+            $orderRequest->whereIn('channel', array_keys($availableApiChannels));
+        }
+
+        $availableStatuses = $this->getAvailableStatuses();
+        if (!is_null($status) && is_array($status) && (count($status) > 0)) {
+            $orderRequest->whereIn('order_status', $status);
+        } else {
+            $orderRequest->whereIn('order_status', array_keys($availableStatuses));
+        }
+
+        $startDateClean = (!is_null($startDate) && (trim($startDate) != '')) ? date('Y-m-d', strtotime(trim($startDate))) : null;
+        $endDateClean = (!is_null($endDate) && (trim($endDate) != '')) ? date('Y-m-d', strtotime(trim($endDate))) : null;
+        if (!is_null($startDateClean) && !is_null($endDateClean)) {
+            $fromDate = '';
+            $toDate = '';
+            if ($endDateClean > $startDateClean) {
+                $fromDate = $startDateClean;
+                $toDate = $endDateClean;
+            } else {
+                $fromDate = $endDateClean;
+                $toDate = $startDateClean;
+            }
+            $orderRequest->whereBetween('delivery_date', [$fromDate, $toDate]);
+        }
+
+        if (!is_null($timeSlot) && (trim($timeSlot) != '')) {
+            $orderRequest->where('delivery_time_slot', trim($timeSlot));
+        }
+
+        $orderItems = $orderRequest->join('sale_order_items', 'sale_orders.order_id', '=', 'sale_order_items.sale_order_id')
+            ->groupBy('sale_order_items.item_sku')
+            ->orderBy('sale_order_items.product_id', 'asc')
+            ->get();
+
+        if (!$orderItems) {
+            return [];
+        }
+
+        $queryResultArray = $orderItems->toArray();
+        $finalArray = [];
+        foreach ($queryResultArray as $queryEl) {
+            $tempArray = [
+                'item_sku' => $queryEl['item_sku'],
+                'item_name' => $queryEl['item_name'],
+                'total_qty' => $queryEl['total_qty'],
+                'total_return_qty' => $queryEl['total_return_qty'],
+                'supplier_name' => '',
+                'item_type' => ''
+            ];
+            $productData = $this->getProductDataBySku($queryEl['item_sku']);
+            $searchAttributes = [
+                'supplier_name',
+                'item_type',
+            ];
+            if (!is_null($productData) && is_array($productData) && (count($productData) > 0)) {
+                if (array_key_exists('custom_attributes', $productData)) {
+                    $customAttr = $productData['custom_attributes'];
+                    if (is_array($customAttr) && (count($customAttr) > 0)) {
+                        foreach ($customAttr as $customAttrEl) {
+                            if (array_key_exists('attribute_code', $customAttrEl) && array_key_exists('value', $customAttrEl)) {
+                                if (in_array($customAttrEl['attribute_code'], $searchAttributes)) {
+                                    $tempArray[$customAttrEl['attribute_code']] = $customAttrEl['value'];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            $finalArray[] = $tempArray;
+        }
+
+        return $finalArray;
 
     }
 

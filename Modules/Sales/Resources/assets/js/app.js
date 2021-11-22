@@ -276,6 +276,38 @@ var SalesCustomJsBlocks = function() {
         });
     };
 
+    var initOosReportTable = function() {
+
+        var table = $('#oos_report_table');
+
+        table.DataTable({
+            responsive: true,
+            dom: `<'row'<'col-sm-12'tr>>
+			<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 10,
+            order: [[0, 'asc']],
+            columnDefs: [],
+        });
+
+    };
+
+    var initFilterOrderItemDateRangePicker = function () {
+        var filterDRPicker = $('#delivery_date_range_filter').daterangepicker({
+            buttonClasses: ' btn',
+            applyClass: 'btn-primary',
+            cancelClass: 'btn-secondary'
+        }, function(start, end, label) {
+            $('input#delivery_date_start_filter').val(start.format('YYYY-MM-DD'));
+            $('input#delivery_date_end_filter').val(end.format('YYYY-MM-DD'));
+        });
+        filterDRPicker.on('show.daterangepicker', function(ev, picker) {
+            //do something, like clearing an input
+            $('input#delivery_date_start_filter').val(picker.startDate.format('YYYY-MM-DD'));
+            $('input#delivery_date_end_filter').val(picker.startDate.format('YYYY-MM-DD'));
+        });
+    };
+
     var showAlertMessage = function(message) {
         $("div.custom_alert_trigger_messages_area")
             .html('<div class="alert alert-custom alert-dark alert-light-dark fade show" role="alert">' +
@@ -410,6 +442,15 @@ var SalesCustomJsBlocks = function() {
                 });
             });
 
+        },
+        updateStockPage: function(hostUrl) {
+
+        },
+        oosReportPage: function(hostUrl) {
+            initOosReportTable();
+        },
+        itemsReportPage: function(hostUrl) {
+            initFilterOrderItemDateRangePicker();
         },
     };
 
