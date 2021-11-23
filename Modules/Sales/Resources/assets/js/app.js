@@ -102,8 +102,10 @@ var SalesCustomJsBlocks = function() {
 
     };
 
-    var posHideOnlinePayment = function (orderSource) {
+    var posHideOnlinePayment = function (orderSource, sourceList) {
         if(orderSource == 'ELGROCER') {
+            $("#paymentMethod").append(new Option("Online Payment Method", "saleschannel"));
+        } else if(orderSource == 'INSTASHOP') {
             $("#paymentMethod").append(new Option("Online Payment Method", "saleschannel"));
         } else {
             $("#paymentMethod option[value='saleschannel']").remove();
@@ -112,11 +114,12 @@ var SalesCustomJsBlocks = function() {
             $('#order_source_id_div').hide();
             posFillForm();
         } else {
+            var sourcedtls =  sourceList[orderSource];
             $('#order_source_id_div').show();
             $("form#order-form")[0].reset();
-            $('#channel-Id').val("ELGROCER");
+            $('#channel-Id').val(sourcedtls['code']);
             $('.customer_info').show();
-            $('#email').val("elgrocer@goodbasket.com");
+            $('#email').val(sourcedtls['email']);
         }
     };
 
@@ -330,7 +333,7 @@ var SalesCustomJsBlocks = function() {
 
             $('select#channel-Id').on('change', function (e) {
                 var currentSource = $(this).val();
-                posHideOnlinePayment(currentSource);
+                posHideOnlinePayment(currentSource, sourceList);
                 posApplyServiceCharge(currentSource, sourceList);
             });
 
