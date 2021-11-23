@@ -398,4 +398,87 @@ class UserCrudController extends Controller
         }
 
     }
+
+    public function changePasswordView(Request $request) {
+
+        $userId = 0;
+        if (session()->has('authUserData')) {
+            $sessionUser = session('authUserData');
+            $userId = (int)$sessionUser['id'];
+        }
+        if ($userId <= 0) {
+            return back()
+                ->with('error', 'The User does not exist!');
+        }
+
+        $givenUserData = User::find($userId);
+        if(!$givenUserData) {
+            return back()
+                ->with('error', 'The User does not exist!');
+        }
+
+        $serviceHelper = new UserServiceHelper();
+
+        $pageTitle = 'Fulfillment Center';
+        $pageSubTitle = 'Change Password';
+
+        return view('userauth::users.password-change', compact(
+            'pageTitle',
+            'pageSubTitle',
+            'givenUserData',
+            'serviceHelper'
+        ));
+
+    }
+
+    public function changePassword(Request $request) {
+
+        $validator = Validator::make($request->all() , [
+            'user_password' => ['required'],
+            'new_password' => [
+                'required',
+                'confirmed',
+                Password::min(8)->letters()->mixedCase()->numbers()->symbols(),
+            ],
+        ], [
+            'user_password.required' => 'The Current Password should be provided.',
+            'new_password.required' => 'The New Password should be provided.',
+        ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput($request->only('user_password', 'new_password', 'new_password_confirmation'));
+        }
+
+        $postData = $validator->validated();
+
+        $userId = 0;
+        if (session()->has('authUserData')) {
+            $sessionUser = session('authUserData');
+            $userId = (int)$sessionUser['id'];
+        }
+        if ($userId <= 0) {
+            return back()
+                ->with('error', 'The User does not exist!');
+        }
+
+        $givenUserData = User::find($userId);
+        if(!$givenUserData) {
+            return back()
+                ->with('error', 'The User does not exist!');
+        }
+
+        if (!Hash::check($postData['user_password'], $givenUserData->password)) {
+            return back()
+                ->with('error', 'The current Password is not valid!');
+        }
+
+        $givenUserData->password = Hash::make($postData['new_password']);
+        $givenUserData->saveQuietly();
+
+        return redirect('/userauth')->with('success', 'The User Password is updated successfully!');
+
+    }
+
 }
