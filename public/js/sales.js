@@ -112,7 +112,7 @@ var SalesCustomJsBlocks = function() {
         }
         if(orderSource == 'INSTORE') {
             $('#order_source_id_div').hide();
-            posFillForm();
+            posFillForm(orderSource, sourceList);
         } else {
             var sourcedtls =  sourceList[orderSource];
             $('#order_source_id_div').show();
@@ -179,14 +179,15 @@ var SalesCustomJsBlocks = function() {
         });
     };
 
-    var posFillForm = function () {
+    var posFillForm = function (orderSource, sourceList) {
+        var sourcedtls =  sourceList[orderSource];
         $('.customer_info').hide();
-        $('#firstname').val("InStore");
-        $('#lastname').val("InStore");
-        $('#email').val("instore@goodbasket.com");
-        $('#telephone').val("+97155555555");
-        $('#street').val("In Store");
-        $('#delivery_time_slot').val("10:00 AM - 2:00 PM");
+        $('#firstname').val(sourcedtls['source']);
+        $('#lastname').val(sourcedtls['source']);
+        $('#email').val(sourcedtls['email']);
+        $('#telephone').val(sourcedtls['contact']);
+        $('#street').val(sourcedtls['source']);
+        $('#delivery_time_slot').val($("#delivery_time_slot option:first").val());
     };
 
     var posCalculateTotal = function () {

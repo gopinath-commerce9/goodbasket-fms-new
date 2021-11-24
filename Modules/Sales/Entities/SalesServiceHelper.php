@@ -170,7 +170,8 @@ class SalesServiceHelper
                 'source' => $orderSource['source'],
                 'channelId' => $orderSource['channelId'],
                 'charge' => $orderSource['charge'],
-                'email' => $orderSource['email']
+                'email' => $orderSource['email'],
+                'contact' => $orderSource['contact']
             ];
         }
         return $returnData;
