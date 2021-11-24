@@ -58,6 +58,15 @@
                         <ul class="navi flex-column navi-hover py-2">
 
                             <li class="navi-item">
+                                <a href="{{ route('users.profileView') }}" class="navi-link">
+                                    <span class="navi-icon">
+                                        <i class="fas fa-user-circle text-success mr-5"></i>
+                                    </span>
+                                    <span class="navi-text">My Profile</span>
+                                </a>
+                            </li>
+
+                            <li class="navi-item">
                                 <a href="{{ route('users.changePasswordView') }}" class="navi-link">
                                     <span class="navi-icon">
                                         <i class="fas fa-unlock text-warning mr-5"></i>

@@ -50,6 +50,10 @@ Route::prefix('userauth')->group(function() {
 
         Route::get('/users/profile', 'UserCrudController@profileView')
             ->name('users.profileView');
+        Route::get('/users/profile-edit', 'UserCrudController@profileEdit')
+            ->name('users.profileEdit');
+        Route::post('/users/profile-update', 'UserCrudController@profileUpdate')
+            ->name('users.profileUpdate');
         Route::get('/users/password-change', 'UserCrudController@changePasswordView')
             ->name('users.changePasswordView');
         Route::post('/users/password-change-update', 'UserCrudController@changePassword')

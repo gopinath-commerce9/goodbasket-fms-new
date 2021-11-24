@@ -51,6 +51,9 @@ var UsersCustomJsBlocks = function() {
                 window.location = hostUrl + '/userauth/users';
             });
         },
+        editProfilePage: function(hostUrl) {
+            let dpImage = new KTImageInput('profile_avatar_area');
+        },
         passwordChangePage: function(hostUrl) {
             showHidePasswordFn('#user_password_form_group');
             showHidePasswordFn('#new_password_form_group');
