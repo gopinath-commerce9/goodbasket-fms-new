@@ -177,21 +177,24 @@ return [
                 'source' => 'ELGROCER',
                 'channelId' => '4',
                 'charge' => '5.00',
-                'email' => 'elgrocer@goodbasket.com'
+                'email' => 'elgrocer@commerce9.io',
+                'contact' => '+97155555555'
             ],
             'INSTORE' => [
                 'code' => 'INSTORE',
-                'source' => 'In Store',
+                'source' => 'InStore',
                 'channelId' => '5',
                 'charge' => '0.00',
-                'email' => 'instore@goodbasket.com'
+                'email' => 'instore@commerce9.io',
+                'contact' => '+97155555555'
             ],
             'INSTASHOP' => [
                 'code' => 'INSTASHOP',
-                'source' => 'Instashop',
+                'source' => 'InstaShop',
                 'channelId' => '6',
                 'charge' => '5.00',
-                'email' => 'instashop@goodbasket.com'
+                'email' => 'instashop@commerce9.io',
+                'contact' => '+97155555555'
             ],
         ],
 
