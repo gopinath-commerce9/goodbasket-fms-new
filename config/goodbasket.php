@@ -175,12 +175,23 @@ return [
             'ELGROCER' => [
                 'code' => 'ELGROCER',
                 'source' => 'ELGROCER',
-                'charge' => '5.00'
+                'channelId' => '4',
+                'charge' => '5.00',
+                'email' => 'elgrocer@goodbasket.com'
             ],
             'INSTORE' => [
                 'code' => 'INSTORE',
                 'source' => 'In Store',
-                'charge' => '0.00'
+                'channelId' => '5',
+                'charge' => '0.00',
+                'email' => 'instore@goodbasket.com'
+            ],
+            'INSTASHOP' => [
+                'code' => 'INSTASHOP',
+                'source' => 'Instashop',
+                'channelId' => '6',
+                'charge' => '5.00',
+                'email' => 'instashop@goodbasket.com'
             ],
         ],
 
