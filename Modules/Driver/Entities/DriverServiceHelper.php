@@ -184,7 +184,7 @@ class DriverServiceHelper
 
         $allowedCurrentStatuses = [
             SaleOrder::SALE_ORDER_STATUS_READY_TO_DISPATCH,
-            SaleOrder::SALE_ORDER_STATUS_OUT_FOR_DELIVERY
+            SaleOrder::SALE_ORDER_STATUS_OUT_FOR_DELIVERY,
         ];
         if (!in_array($order->order_status, $allowedCurrentStatuses)) {
             return [
@@ -195,7 +195,8 @@ class DriverServiceHelper
 
         $driverModifiableStatuses = [
             SaleOrder::SALE_ORDER_STATUS_OUT_FOR_DELIVERY,
-            SaleOrder::SALE_ORDER_STATUS_DELIVERED
+            SaleOrder::SALE_ORDER_STATUS_DELIVERED,
+            SaleOrder::SALE_ORDER_STATUS_CANCELED,
         ];
         if (is_null($orderStatus) || (trim($orderStatus) == '') || !in_array(trim($orderStatus), $driverModifiableStatuses)) {
             return [
