@@ -4,6 +4,7 @@
 namespace Modules\API\Entities;
 
 use Modules\Base\Entities\RestApiService;
+use Modules\Base\Entities\BaseServiceHelper;
 
 class ApiServiceHelper
 {
@@ -72,6 +73,7 @@ class ApiServiceHelper
     const HTTP_STATUS_CODE_NETWORK_AUTHENTICATION_REQUIRED = 511;                             // RFC6585
 
     private $restApiService = null;
+    private $baseService = null;
 
     private $statusTexts = [
         100 => 'Continue',
@@ -140,6 +142,7 @@ class ApiServiceHelper
     public function __construct($channel = '')
     {
         $this->restApiService = new RestApiService();
+        $this->baseService = new BaseServiceHelper();
         $this->setApiChannel($channel);
     }
 
@@ -208,12 +211,35 @@ class ApiServiceHelper
 
     }
 
+    /**
+     * Get the Status Text for the Given HTTP Status Code
+     *
+     * @param string $httpStatusCode
+     *
+     * @return mixed|string
+     */
     public function getStatusCodeText($httpStatusCode = '') {
         return (
             is_null($httpStatusCode)
             || !is_numeric($httpStatusCode)
             || !array_key_exists($httpStatusCode, $this->statusTexts)
         ) ? '' : $this->statusTexts[$httpStatusCode];
+    }
+
+    public function getFileUrl($path = '') {
+        return $this->baseService->getFileUrl($path);
+    }
+
+    public function getUserImageUrl($path = '') {
+        return $this->baseService->getFileUrl('media/images/users/' . $path);
+    }
+
+    public function deleteFile($path = '') {
+        return $this->baseService->deleteFile($path);
+    }
+
+    public function deleteUserImage($path = '') {
+        return $this->baseService->deleteFile('media/images/users/' . $path);
     }
 
 }
